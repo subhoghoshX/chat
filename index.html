@@ -8,6 +8,34 @@
   </head>
   <body>
     <div id="root"></div>
+    <script type="text/javascript" is:inline>
+      function setDarkMode() {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (theme === "light") {
+          document.documentElement.classList.remove("dark");
+        } else if (theme === "system" || theme === null) {
+          const isDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          if (isDark) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        }
+      }
+
+      window.addEventListener("storage", setDarkMode);
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", setDarkMode);
+
+      // for intial page load or reload
+      setDarkMode();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
