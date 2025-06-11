@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 const data = {
   user: {
@@ -51,7 +53,8 @@ export default function AppSidebar() {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = useState(data.navMain[0]);
-  const [threads, setThreads] = useState(data.threads);
+  // const [threads, setThreads] = useState(data.threads);
+  const threads = useQuery(api.threads.getThreads);
   const { setOpen } = useSidebar();
 
   return (
@@ -85,7 +88,7 @@ export default function AppSidebar() {
                       onClick={() => {
                         setActiveItem(item);
                         const thread = data.threads.sort(() => Math.random() - 0.5);
-                        setThreads(thread.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1)));
+                        // setThreads(thread.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1)));
                         setOpen(true);
                       }}
                       isActive={activeItem?.title === item.title}
@@ -120,10 +123,10 @@ export default function AppSidebar() {
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {threads.map((thread) => (
+              {threads?.map((thread) => (
                 <a
                   href="#"
-                  key={thread.id}
+                  key={thread._id}
                   className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
                 >
                   <span className="line-clamp-1 w-[260px] whitespace-break-spaces">{thread.title}</span>
