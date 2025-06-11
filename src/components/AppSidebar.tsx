@@ -19,41 +19,19 @@ import ThemeToggle from "./ThemeToggle";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+const navMain = [
+  {
+    title: "Chats",
+    url: "#",
+    icon: MessageCircle,
+    isActive: true,
   },
-  navMain: [
-    {
-      title: "Chats",
-      url: "#",
-      icon: MessageCircle,
-      isActive: true,
-    },
-  ],
-  threads: [
-    {
-      id: "44ada268-a127-4f69-8ab2-d4f762dedd6b",
-      title: "Solve advent of code 2021",
-    },
-    {
-      id: "44ada268-a127-4f69-8ab2-d4f762dedd6c",
-      title: "Greeting",
-    },
-    {
-      id: "44ada268-a127-4f69-8ab2-d4f762dedd6d",
-      title: "Meaning of life",
-    },
-  ],
-};
+];
 
 export default function AppSidebar() {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = useState(data.navMain[0]);
-  // const [threads, setThreads] = useState(data.threads);
+  const [activeItem, setActiveItem] = useState(navMain[0]);
   const threads = useQuery(api.threads.getThreads);
   const { setOpen } = useSidebar();
 
@@ -78,7 +56,7 @@ export default function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupContent className="px-1.5 md:px-0">
               <SidebarMenu>
-                {data.navMain.map((item) => (
+                {navMain.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       tooltip={{
@@ -87,8 +65,6 @@ export default function AppSidebar() {
                       }}
                       onClick={() => {
                         setActiveItem(item);
-                        const thread = data.threads.sort(() => Math.random() - 0.5);
-                        // setThreads(thread.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1)));
                         setOpen(true);
                       }}
                       isActive={activeItem?.title === item.title}
