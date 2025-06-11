@@ -18,6 +18,7 @@ import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Link } from "react-router";
 
 const navMain = [
   {
@@ -43,12 +44,11 @@ export default function AppSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-                {/* TODO: use client side routing, it reloads the page otherwise */}
-                <a href="/">
+                <Link to="/">
                   <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                     <Bird className="size-4" />
                   </div>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -101,13 +101,13 @@ export default function AppSidebar() {
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
               {threads?.map((thread) => (
-                <a
-                  href={`/chat/${thread.id}`}
+                <Link
+                  to={`/chat/${thread.id}`}
                   key={thread._id}
                   className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
                 >
                   <span className="line-clamp-1 w-[260px] whitespace-break-spaces">{thread.title}</span>
-                </a>
+                </Link>
               ))}
             </SidebarGroupContent>
           </SidebarGroup>
