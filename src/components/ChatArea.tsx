@@ -5,6 +5,7 @@ import { Textarea } from "./ui/textarea";
 
 export default function ChatArea() {
   const { thread_id } = useParams();
+  console.log("thread_id => ", thread_id);
 
   return (
     <main className="p-2 relative grow overflow-hidden">
