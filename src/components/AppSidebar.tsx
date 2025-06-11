@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 const navMain = [
@@ -33,6 +33,7 @@ export default function AppSidebar() {
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = useState(navMain[0]);
   const threads = useQuery(api.threads.getThreads);
+  const createThread = useMutation(api.threads.createThread);
   const { setOpen } = useSidebar();
 
   return (
@@ -93,7 +94,7 @@ export default function AppSidebar() {
 
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">
         <SidebarHeader className="gap-3.5 border-b p-4">
-          <Button>New Chat</Button>
+          <Button onClick={() => createThread({ id: crypto.randomUUID() })}>New Chat</Button>
           <SidebarInput placeholder="Search threads..." />
         </SidebarHeader>
         <SidebarContent>
@@ -101,7 +102,7 @@ export default function AppSidebar() {
             <SidebarGroupContent>
               {threads?.map((thread) => (
                 <a
-                  href="#"
+                  href={`/chat/${thread.id}`}
                   key={thread._id}
                   className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
                 >

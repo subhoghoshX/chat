@@ -3,6 +3,7 @@ import { v } from "convex/values";
 
 export default defineSchema({
   threads: defineTable({
+    id: v.string(),
     title: v.string(),
     isPublic: v.boolean(),
   }),
