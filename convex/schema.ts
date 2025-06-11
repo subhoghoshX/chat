@@ -7,4 +7,9 @@ export default defineSchema({
     title: v.string(),
     isPublic: v.boolean(),
   }),
+  messages: defineTable({
+    thread_id: v.string(),
+    content: v.string(),
+    by: v.string(),
+  }).index("by_thread_id", ["thread_id"]),
 });
