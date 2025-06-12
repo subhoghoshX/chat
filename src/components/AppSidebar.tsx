@@ -19,6 +19,7 @@ import ThemeToggle from "./ThemeToggle";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Link } from "react-router";
+import type { Id } from "convex/_generated/dataModel";
 
 const navMain = [
   {
@@ -34,7 +35,22 @@ export default function AppSidebar() {
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = useState(navMain[0]);
   const threads = useQuery(api.threads.getThreads);
-  const createThread = useMutation(api.threads.createThread);
+  const createThread = useMutation(api.threads.createThread).withOptimisticUpdate((localStore, args) => {
+    const prevThreads = localStore.getQuery(api.threads.getThreads, {});
+
+    if (prevThreads !== undefined) {
+      localStore.setQuery(api.threads.getThreads, {}, [
+        ...prevThreads,
+        {
+          _id: crypto.randomUUID() as Id<"threads">,
+          _creationTime: Date.now(),
+          ...args,
+          title: "New Thread",
+          isPublic: false,
+        },
+      ]);
+    }
+  });
   const { setOpen } = useSidebar();
 
   return (

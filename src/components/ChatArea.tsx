@@ -7,11 +7,22 @@ import { api } from "../../convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { Model } from "../../utils/supported-models";
+import type { Id } from "convex/_generated/dataModel";
 
 export default function ChatArea() {
   const { thread_id } = useParams();
-  const messages = useQuery(api.messages.getMessages, { thread_id });
-  const createMessage = useMutation(api.messages.createMessage);
+  const messages = useQuery(api.messages.getMessages, thread_id ? { thread_id } : "skip");
+
+  const createMessage = useMutation(api.messages.createMessage).withOptimisticUpdate((localStore, args) => {
+    const prevMessages = localStore.getQuery(api.messages.getMessages, { thread_id: args.thread_id });
+
+    if (prevMessages !== undefined) {
+      localStore.setQuery(api.messages.getMessages, { thread_id: args.thread_id }, [
+        ...prevMessages,
+        { _id: crypto.randomUUID() as Id<"messages">, _creationTime: Date.now(), ...args },
+      ]);
+    }
+  });
 
   const [selectedModel, setSelectedModel] = useState<Model>("vertex/gemini-2.0-flash-001");
 

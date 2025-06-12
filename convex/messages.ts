@@ -24,10 +24,8 @@ export const createMessage = mutation({
 });
 
 export const getMessages = query({
-  args: { thread_id: v.optional(v.string()) },
+  args: { thread_id: v.string() },
   async handler(ctx, { thread_id }) {
-    if (!thread_id) return [];
-
     return await ctx.db
       .query("messages")
       .withIndex("by_thread_id", (q) => q.eq("thread_id", thread_id))
