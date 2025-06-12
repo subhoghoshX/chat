@@ -18,8 +18,9 @@ import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 import type { Id } from "convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 
 const navMain = [
   {
@@ -52,6 +53,8 @@ export default function AppSidebar() {
     }
   });
   const { setOpen } = useSidebar();
+
+  const { "*": path } = useParams();
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden *:data-[sidebar=sidebar]:flex-row">
@@ -120,7 +123,10 @@ export default function AppSidebar() {
                 <Link
                   to={`/chat/${thread.id}`}
                   key={thread._id}
-                  className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
+                  className={cn(
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0",
+                    { "bg-sidebar-accent": path?.split("/")[1] === thread.id },
+                  )}
                 >
                   <span className="line-clamp-1 w-[260px] whitespace-break-spaces">{thread.title}</span>
                 </Link>
