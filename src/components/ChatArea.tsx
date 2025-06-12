@@ -66,7 +66,9 @@ interface ChatBubbleProps {
 function ChatBubble({ content, by }: ChatBubbleProps) {
   return (
     <section
-      className={cn("rounded-lg px-4 py-2", { "bg-neutral-100 dark:bg-neutral-900 w-fit ml-auto": by === "human" })}
+      className={cn("rounded-lg px-4 py-2 prose max-w-none", {
+        "bg-neutral-100 dark:bg-neutral-900 w-fit ml-auto": by === "human",
+      })}
       dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
     />
   );
