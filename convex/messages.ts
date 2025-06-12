@@ -5,7 +5,7 @@ import { generateText } from "ai";
 import { api, internal } from "./_generated/api";
 
 export const createMessage = mutation({
-  args: { thread_id: v.string(), content: v.string(), by: v.string() },
+  args: { thread_id: v.string(), content: v.string(), by: v.string(), model: v.optional(v.string()) },
   async handler(ctx, args) {
     await ctx.db.insert("messages", {
       thread_id: args.thread_id,
@@ -17,6 +17,7 @@ export const createMessage = mutation({
       await ctx.scheduler.runAfter(0, internal.messages.getAiReply, {
         thread_id: args.thread_id,
         prompt: args.content,
+        model: args.model ?? "google/gemini-2.0-flash-001",
       });
     }
   },
@@ -35,10 +36,10 @@ export const getMessages = query({
 });
 
 export const getAiReply = internalAction({
-  args: { thread_id: v.string(), prompt: v.string() },
+  args: { thread_id: v.string(), prompt: v.string(), model: v.string() },
   async handler(ctx, args) {
     const { text } = await generateText({
-      model: gateway("xai/grok-3-beta"),
+      model: gateway(args.model),
       prompt: args.prompt,
       // onError(error: unknown) {
       //   console.log(error);
@@ -48,7 +49,7 @@ export const getAiReply = internalAction({
     await ctx.scheduler.runAfter(0, api.messages.createMessage, {
       thread_id: args.thread_id,
       content: text,
-      by: "xai/grok-3-beta",
+      by: args.model,
     });
   },
 });

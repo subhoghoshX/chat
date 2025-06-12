@@ -5,11 +5,15 @@ import { Textarea } from "./ui/textarea";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import type { Model } from "../../utils/supported-models";
 
 export default function ChatArea() {
   const { thread_id } = useParams();
   const messages = useQuery(api.messages.getMessages, { thread_id });
   const createMessage = useMutation(api.messages.createMessage);
+
+  const [selectedModel, setSelectedModel] = useState<Model>("vertex/gemini-2.0-flash-001");
 
   return (
     <main className="relative grow h-screen overflow-hidden">
@@ -27,13 +31,17 @@ export default function ChatArea() {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               if (e.target instanceof HTMLTextAreaElement && thread_id) {
-                createMessage({ thread_id, content: e.target.value, by: "human" });
+                createMessage({ thread_id, content: e.target.value, by: "human", model: selectedModel });
                 e.target.value = "";
               }
             }
           }}
         />
-        <ModelSelector className="absolute bottom-3 left-3" />
+        <ModelSelector
+          className="absolute bottom-3 left-3"
+          selectedModel={selectedModel}
+          onChange={(model) => setSelectedModel(model)}
+        />
       </form>
     </main>
   );
