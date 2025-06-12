@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { Model } from "../../utils/supported-models";
 import type { Id } from "convex/_generated/dataModel";
+import { marked } from "marked";
 
 export default function ChatArea() {
   const { thread_id } = useParams();
@@ -66,8 +67,7 @@ function ChatBubble({ content, by }: ChatBubbleProps) {
   return (
     <section
       className={cn("rounded-lg px-4 py-2", { "bg-neutral-100 dark:bg-neutral-900 w-fit ml-auto": by === "human" })}
-    >
-      {content}
-    </section>
+      dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
+    />
   );
 }
