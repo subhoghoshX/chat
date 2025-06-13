@@ -49,7 +49,14 @@ export default function AppSidebar() {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = useState(navMain[0]);
-  const threads = useQuery(api.threads.getThreads);
+  let threads = useQuery(api.threads.getThreads);
+  if (!threads) {
+    const str = localStorage.getItem("threads");
+    threads = str ? JSON.parse(str) : undefined;
+  } else {
+    localStorage.setItem("threads", JSON.stringify(threads));
+  }
+
   const { setOpen } = useSidebar();
 
   const { "*": path } = useParams();
