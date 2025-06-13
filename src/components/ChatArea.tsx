@@ -13,14 +13,14 @@ import { Button } from "./ui/button";
 import { ArrowUp, Plus } from "lucide-react";
 
 export default function ChatArea() {
-  const { thread_id } = useParams();
-  const messages = useQuery(api.messages.getMessages, thread_id ? { thread_id } : "skip");
+  const { threadId } = useParams();
+  const messages = useQuery(api.messages.getMessages, threadId ? { threadId } : "skip");
 
   const createMessage = useMutation(api.messages.createMessage).withOptimisticUpdate((localStore, args) => {
-    const prevMessages = localStore.getQuery(api.messages.getMessages, { thread_id: args.thread_id });
+    const prevMessages = localStore.getQuery(api.messages.getMessages, { threadId: args.threadId });
 
     if (prevMessages !== undefined) {
-      localStore.setQuery(api.messages.getMessages, { thread_id: args.thread_id }, [
+      localStore.setQuery(api.messages.getMessages, { threadId: args.threadId }, [
         ...prevMessages,
         { _id: crypto.randomUUID() as Id<"messages">, _creationTime: Date.now(), ...args },
       ]);
@@ -46,8 +46,8 @@ export default function ChatArea() {
           onKeyDown={async (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              if (e.target instanceof HTMLTextAreaElement && thread_id && e.target.value) {
-                await createMessage({ thread_id, content: e.target.value, by: "human", model: selectedModel });
+              if (e.target instanceof HTMLTextAreaElement && threadId && e.target.value) {
+                await createMessage({ threadId, content: e.target.value, by: "human", model: selectedModel });
                 e.target.value = "";
               }
             }
@@ -64,8 +64,8 @@ export default function ChatArea() {
             type="button"
             onClick={() => {
               const textarea = document.getElementById("prompt-input");
-              if (textarea instanceof HTMLTextAreaElement && thread_id && textarea.value) {
-                createMessage({ thread_id, content: textarea.value, by: "human", model: selectedModel });
+              if (textarea instanceof HTMLTextAreaElement && threadId && textarea.value) {
+                createMessage({ threadId, content: textarea.value, by: "human", model: selectedModel });
                 textarea.value = "";
               }
             }}

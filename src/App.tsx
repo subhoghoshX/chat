@@ -16,7 +16,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<ChatArea />} />
-        <Route path="/chat/:thread_id" element={<ChatArea />} />
+        <Route path="/chat/:threadId" element={<ChatArea />} />
       </Routes>
     </SidebarProvider>
   );

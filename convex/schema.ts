@@ -8,8 +8,8 @@ export default defineSchema({
     isPublic: v.boolean(),
   }),
   messages: defineTable({
-    thread_id: v.string(),
+    threadId: v.string(),
     content: v.string(),
     by: v.string(),
-  }).index("by_thread_id", ["thread_id"]),
+  }).index("by_thread_id", ["threadId"]),
 });

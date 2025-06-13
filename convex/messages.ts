@@ -5,17 +5,17 @@ import { streamText } from "ai";
 import { internal } from "./_generated/api";
 
 export const createMessage = mutation({
-  args: { thread_id: v.string(), content: v.string(), by: v.string(), model: v.optional(v.string()) },
+  args: { threadId: v.string(), content: v.string(), by: v.string(), model: v.optional(v.string()) },
   async handler(ctx, args) {
     await ctx.db.insert("messages", {
-      thread_id: args.thread_id,
+      threadId: args.threadId,
       content: args.content,
       by: args.by,
     });
 
     if (args.by === "human" && args.model) {
       const aiMessageId = await ctx.db.insert("messages", {
-        thread_id: args.thread_id,
+        threadId: args.threadId,
         content: "",
         by: args.model,
       });
@@ -30,11 +30,11 @@ export const createMessage = mutation({
 });
 
 export const getMessages = query({
-  args: { thread_id: v.string() },
-  async handler(ctx, { thread_id }) {
+  args: { threadId: v.string() },
+  async handler(ctx, { threadId }) {
     return await ctx.db
       .query("messages")
-      .withIndex("by_thread_id", (q) => q.eq("thread_id", thread_id))
+      .withIndex("by_thread_id", (q) => q.eq("threadId", threadId))
       .collect();
   },
 });
