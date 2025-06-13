@@ -1,4 +1,4 @@
 {
   "rewrites": [{ "source": "/(.*)", "destination": "/" }],
-  "crons": [{ "path": "/lib/cron", "schedule": "0 0,11,22 * * *" }]
+  "crons": [{ "path": "/lib/cron", "schedule": "0 0 * * *" }, { "path": "/lib/cron", "schedule": "0 12 * * *" }]
 }
