@@ -226,7 +226,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
     <div
       key={thread._id}
       className={cn(
-        "hover:bg-sidebar-accent mx-2 hover:[&>div]:right-1 hover:[&>div]:bg-gradient-to-r  rounded-md relative group overflow-hidden",
+        "hover:bg-sidebar-accent group relative mx-2 overflow-hidden rounded-md hover:[&>div]:right-1 hover:[&>div]:bg-gradient-to-r",
         { "bg-sidebar-accent": path?.split("/")[1] === thread.id },
       )}
     >
@@ -234,7 +234,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
         <Link
           to={`/chat/${thread.id}`}
           key={thread._id}
-          className="block py-2 px-2"
+          className="block px-2 py-2"
           onDoubleClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -268,10 +268,10 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
           }}
         />
       )}
-      <div className="absolute top-1/2 flex -translate-y-1/2 z-10 -right-10 from-transparent via-sidebar-accent to-sidebar-accent pointer-events-none transition-all">
+      <div className="via-sidebar-accent to-sidebar-accent pointer-events-none absolute top-1/2 -right-10 z-10 flex -translate-y-1/2 from-transparent transition-all">
         <span className="inline-block w-8"></span>
         <Button
-          className="size-7 pointer-events-auto"
+          className="pointer-events-auto size-7"
           size="icon"
           variant="destructive"
           onClick={() => onDeleteBtnClick(thread)}

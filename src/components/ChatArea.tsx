@@ -63,21 +63,21 @@ export default function ChatArea() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     textareaRef.current?.focus();
-  }, [])
+  }, []);
 
   return (
-    <main className="relative grow h-screen overflow-hidden">
-      <SidebarTrigger className="absolute left-2 top-2" />
-      <div className="overflow-auto h-full pt-4 pb-48">
-        <article className="max-w-3xl mx-auto space-y-5">
+    <main className="relative h-screen grow overflow-hidden">
+      <SidebarTrigger className="absolute top-2 left-2" />
+      <div className="h-full overflow-auto pt-4 pb-48">
+        <article className="mx-auto max-w-3xl space-y-5">
           {messages?.map((message) => <ChatBubble key={message._id} content={message.content} by={message.by} />)}
         </article>
       </div>
-      <form className="absolute max-w-3xl w-full bottom-0 left-1/2 -translate-x-1/2 border p-2 rounded-t-xl shadow bg-white/85 dark:bg-neutral-900/85 backdrop-blur">
+      <form className="absolute bottom-0 left-1/2 w-full max-w-3xl -translate-x-1/2 rounded-t-xl border bg-white/85 p-2 shadow backdrop-blur dark:bg-neutral-900/85">
         <Textarea
           id="prompt-input"
           ref={textareaRef}
-          className="rounded-md p-3 resize-none focus-visible:ring-0 focus-visible:border-input"
+          className="focus-visible:border-input resize-none rounded-md p-3 focus-visible:ring-0"
           placeholder="Ask anything..."
           onKeyDown={async (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -124,8 +124,8 @@ function ChatBubble({ content, by }: ChatBubbleProps) {
   }
   return (
     <section
-      className={cn("rounded-lg px-4 py-2 prose dark:prose-invert max-w-none", {
-        "bg-neutral-100 dark:bg-neutral-900 w-fit ml-auto": by === "human",
+      className={cn("prose dark:prose-invert max-w-none rounded-lg px-4 py-2", {
+        "ml-auto w-fit bg-neutral-100 dark:bg-neutral-900": by === "human",
       })}
       dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
     />
@@ -134,10 +134,10 @@ function ChatBubble({ content, by }: ChatBubbleProps) {
 
 function AnimatingChatBubble() {
   return (
-    <div className="flex w-fit gap-1 h-11 items-center px-4">
+    <div className="flex h-11 w-fit items-center gap-1 px-4">
       <span className="size-2 animate-bounce rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
-      <span className="size-2 animate-bounce [animation-delay:300ms] [animation-fill-mode:both] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
-      <span className="size-2 animate-bounce [animation-delay:600ms] [animation-fill-mode:both] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
+      <span className="size-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:300ms] [animation-fill-mode:both] dark:bg-neutral-900"></span>
+      <span className="size-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:600ms] [animation-fill-mode:both] dark:bg-neutral-900"></span>
     </div>
   );
 }

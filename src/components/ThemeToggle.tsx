@@ -9,7 +9,7 @@ export default function ThemeToggle() {
 
   return (
     <Tabs value={theme} className="shrink-0" orientation="vertical">
-      <TabsList className="flex-col h-fit">
+      <TabsList className="h-fit flex-col">
         <TabsTrigger
           value="system"
           className="p-1"
