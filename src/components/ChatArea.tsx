@@ -77,12 +77,12 @@ export default function ChatArea() {
         <Textarea
           id="prompt-input"
           ref={textareaRef}
-          className="focus-visible:border-input resize-none rounded-md p-3 focus-visible:ring-0"
+          className="focus-visible:border-input max-h-[70vh] resize-none rounded-md p-3 focus-visible:ring-0"
           placeholder="Ask anything..."
           onKeyDown={async (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              if (e.target instanceof HTMLTextAreaElement && e.target.value) {
+              if (e.target instanceof HTMLTextAreaElement && e.target.value.trim()) {
                 submitFormHandler(e.target.value);
                 e.target.value = "";
               }
@@ -100,7 +100,7 @@ export default function ChatArea() {
             type="button"
             onClick={() => {
               const textarea = document.getElementById("prompt-input");
-              if (textarea instanceof HTMLTextAreaElement && textarea.value) {
+              if (textarea instanceof HTMLTextAreaElement && textarea.value.trim()) {
                 submitFormHandler(textarea.value);
                 textarea.value = "";
               }
