@@ -77,7 +77,7 @@ export default function AppSidebar() {
       localStore.setQuery(
         api.threads.getThreads,
         {},
-        prevThreads.filter((thread) => thread._id !== args.id),
+        prevThreads.filter((thread) => thread._id !== args._id),
       );
     }
   });
@@ -182,7 +182,7 @@ export default function AppSidebar() {
                 <AlertDialogAction
                   className="bg-red-500 dark:bg-red-400"
                   onClick={() => {
-                    deleteThread({ id: threadToDelete._id, threadId: threadToDelete.id });
+                    deleteThread({ _id: threadToDelete._id, threadId: threadToDelete.id });
                     // if the user is in the thread that's being deleted, re-route them to /
                     if (path?.split("/")[1] === threadToDelete.id) {
                       navigate("/");
@@ -216,7 +216,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
 
     if (prevThreads !== undefined) {
       const newThreads = prevThreads.map((thread) =>
-        thread._id === args.id ? { ...thread, title: args.title } : thread,
+        thread._id === args._id ? { ...thread, title: args.title } : thread,
       );
       localStore.setQuery(api.threads.getThreads, {}, newThreads);
     }
@@ -251,7 +251,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               if (newThreadTitle?.trim()) {
-                updateThreadTitle({ id: thread._id, title: newThreadTitle });
+                updateThreadTitle({ _id: thread._id, title: newThreadTitle });
               }
               setIsThreadTitleEditing(false);
             }
@@ -262,7 +262,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
           }}
           onBlur={() => {
             if (newThreadTitle) {
-              updateThreadTitle({ id: thread._id, title: newThreadTitle });
+              updateThreadTitle({ _id: thread._id, title: newThreadTitle });
             }
             setIsThreadTitleEditing(false);
           }}

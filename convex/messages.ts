@@ -21,7 +21,7 @@ export const createMessage = mutation({
       });
 
       await ctx.scheduler.runAfter(0, internal.messages.getAiReply, {
-        id: aiMessageId,
+        _id: aiMessageId,
         prompt: args.content,
         model: args.model,
       });
@@ -33,7 +33,7 @@ export const createMessage = mutation({
         .first();
       if (thread && thread.title === "New Thread") {
         ctx.scheduler.runAfter(0, internal.threads.generateThreadTitle, {
-          threadId: thread._id,
+          _threadId: thread._id,
           firstMessage: args.content,
         });
       }
@@ -52,14 +52,14 @@ export const getMessages = query({
 });
 
 export const updateMessage = internalMutation({
-  args: { id: v.id("messages"), content: v.string() },
+  args: { _id: v.id("messages"), content: v.string() },
   async handler(ctx, args) {
-    await ctx.db.patch(args.id, { content: args.content });
+    await ctx.db.patch(args._id, { content: args.content });
   },
 });
 
 export const getAiReply = internalAction({
-  args: { id: v.id("messages"), prompt: v.string(), model: v.string() },
+  args: { _id: v.id("messages"), prompt: v.string(), model: v.string() },
   async handler(ctx, args) {
     const { textStream } = streamText({
       model: gateway(args.model),
@@ -74,7 +74,7 @@ export const getAiReply = internalAction({
     for await (const textPart of textStream) {
       textRecievedSoFar += textPart;
       await ctx.runMutation(internal.messages.updateMessage, {
-        id: args.id,
+        _id: args._id,
         content: textRecievedSoFar,
       });
     }

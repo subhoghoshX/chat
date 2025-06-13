@@ -23,16 +23,16 @@ export const getThreads = query({
 });
 
 export const updateThread = mutation({
-  args: { id: v.id("threads"), title: v.string() },
+  args: { _id: v.id("threads"), title: v.string() },
   async handler(ctx, args) {
-    ctx.db.patch(args.id, { title: args.title });
+    ctx.db.patch(args._id, { title: args.title });
   },
 });
 
 export const deleteThread = mutation({
-  args: { id: v.id("threads"), threadId: v.string() },
+  args: { _id: v.id("threads"), threadId: v.string() },
   async handler(ctx, args) {
-    ctx.db.delete(args.id);
+    ctx.db.delete(args._id);
 
     // also delete the messages in the thread
     const messages = await ctx.db
@@ -46,7 +46,7 @@ export const deleteThread = mutation({
 });
 
 export const generateThreadTitle = internalAction({
-  args: { threadId: v.id("threads"), firstMessage: v.string() },
+  args: { _threadId: v.id("threads"), firstMessage: v.string() },
   async handler(ctx, args) {
     const { text } = await generateText({
       model: gateway("vertex/gemini-2.0-flash-001"),
@@ -56,6 +56,6 @@ export const generateThreadTitle = internalAction({
       prompt: args.firstMessage,
     });
 
-    await ctx.runMutation(api.threads.updateThread, { id: args.threadId, title: text });
+    await ctx.runMutation(api.threads.updateThread, { _id: args._threadId, title: text });
   },
 });
