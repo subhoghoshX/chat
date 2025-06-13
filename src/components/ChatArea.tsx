@@ -100,8 +100,8 @@ function AnimatingChatBubble() {
   return (
     <div className="flex w-fit gap-1 h-11 items-center px-4">
       <span className="size-2 animate-bounce rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
-      <span className="size-2 animate-bounce [animation-delay:300ms] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
-      <span className="size-2 animate-bounce [animation-delay:600ms] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
+      <span className="size-2 animate-bounce [animation-delay:300ms] [animation-fill-mode:both] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
+      <span className="size-2 animate-bounce [animation-delay:600ms] [animation-fill-mode:both] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
     </div>
   );
 }
