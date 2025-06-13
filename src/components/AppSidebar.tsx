@@ -13,14 +13,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Link, useParams } from "react-router";
-import type { Id } from "convex/_generated/dataModel";
+import { Link, useNavigate, useParams } from "react-router";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const navMain = [
   {
@@ -36,25 +36,25 @@ export default function AppSidebar() {
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = useState(navMain[0]);
   const threads = useQuery(api.threads.getThreads);
-  const createThread = useMutation(api.threads.createThread).withOptimisticUpdate((localStore, args) => {
-    const prevThreads = localStore.getQuery(api.threads.getThreads, {});
-
-    if (prevThreads !== undefined) {
-      localStore.setQuery(api.threads.getThreads, {}, [
-        ...prevThreads,
-        {
-          _id: crypto.randomUUID() as Id<"threads">,
-          _creationTime: Date.now(),
-          ...args,
-          title: "New Thread",
-          isPublic: false,
-        },
-      ]);
-    }
-  });
   const { setOpen } = useSidebar();
 
   const { "*": path } = useParams();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    function handleCreateNewChat(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "O") {
+        e.preventDefault();
+        navigate("/");
+      }
+    }
+    window.addEventListener("keydown", handleCreateNewChat);
+
+    return () => {
+      window.removeEventListener("keydown", handleCreateNewChat);
+    };
+  }, [navigate]);
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden *:data-[sidebar=sidebar]:flex-row">
@@ -113,7 +113,14 @@ export default function AppSidebar() {
 
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">
         <SidebarHeader className="gap-3.5 border-b p-4">
-          <Button onClick={() => createThread({ id: crypto.randomUUID() })}>New Chat</Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link to="/">
+                <Button className="w-full">New Chat</Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>Ctrl/Cmd + Shift + O</TooltipContent>
+          </Tooltip>
           <SidebarInput placeholder="Search threads..." />
         </SidebarHeader>
         <SidebarContent>

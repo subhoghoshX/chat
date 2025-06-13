@@ -6,7 +6,7 @@ export default defineSchema({
     id: v.string(),
     title: v.string(),
     isPublic: v.boolean(),
-  }),
+  }).index("by_thread_id", ["id"]),
   messages: defineTable({
     threadId: v.string(),
     content: v.string(),

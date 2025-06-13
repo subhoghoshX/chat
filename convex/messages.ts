@@ -25,6 +25,18 @@ export const createMessage = mutation({
         prompt: args.content,
         model: args.model,
       });
+
+      // if it's first message generate thread title
+      const thread = await ctx.db
+        .query("threads")
+        .withIndex("by_thread_id", (q) => q.eq("id", args.threadId))
+        .first();
+      if (thread && thread.title === "New Thread") {
+        ctx.scheduler.runAfter(0, internal.threads.generateThreadTitle, {
+          threadId: thread._id,
+          firstMessage: args.content,
+        });
+      }
     }
   },
 });

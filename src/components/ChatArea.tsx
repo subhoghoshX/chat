@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import ModelSelector from "./ModelSelector";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Textarea } from "./ui/textarea";
@@ -27,7 +27,38 @@ export default function ChatArea() {
     }
   });
 
+  const createThread = useMutation(api.threads.createThread).withOptimisticUpdate((localStore, args) => {
+    const prevThreads = localStore.getQuery(api.threads.getThreads, {});
+
+    if (prevThreads !== undefined) {
+      localStore.setQuery(api.threads.getThreads, {}, [
+        ...prevThreads,
+        {
+          _id: crypto.randomUUID() as Id<"threads">,
+          _creationTime: Date.now(),
+          ...args,
+          title: "New Thread",
+          isPublic: false,
+        },
+      ]);
+    }
+  });
+
   const [selectedModel, setSelectedModel] = useState<Model>("vertex/gemini-2.0-flash-001");
+
+  const navigate = useNavigate();
+
+  function submitFormHandler(prompt: string) {
+    if (threadId) {
+      createMessage({ threadId, content: prompt, by: "human", model: selectedModel });
+    } else {
+      // it's a new chat then
+      const id = crypto.randomUUID();
+      createThread({ id });
+      createMessage({ threadId: id, content: prompt, by: "human", model: selectedModel });
+      navigate(`/chat/${id}`);
+    }
+  }
 
   return (
     <main className="relative grow h-screen overflow-hidden">
@@ -46,8 +77,8 @@ export default function ChatArea() {
           onKeyDown={async (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              if (e.target instanceof HTMLTextAreaElement && threadId && e.target.value) {
-                await createMessage({ threadId, content: e.target.value, by: "human", model: selectedModel });
+              if (e.target instanceof HTMLTextAreaElement && e.target.value) {
+                submitFormHandler(e.target.value);
                 e.target.value = "";
               }
             }
@@ -64,8 +95,8 @@ export default function ChatArea() {
             type="button"
             onClick={() => {
               const textarea = document.getElementById("prompt-input");
-              if (textarea instanceof HTMLTextAreaElement && threadId && textarea.value) {
-                createMessage({ threadId, content: textarea.value, by: "human", model: selectedModel });
+              if (textarea instanceof HTMLTextAreaElement && textarea.value) {
+                submitFormHandler(textarea.value);
                 textarea.value = "";
               }
             }}
