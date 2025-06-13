@@ -9,6 +9,8 @@ import { useState } from "react";
 import type { Model } from "../../utils/supported-models";
 import type { Id } from "convex/_generated/dataModel";
 import { marked } from "marked";
+import { Button } from "./ui/button";
+import { ArrowUp, Plus } from "lucide-react";
 
 export default function ChatArea() {
   const { thread_id } = useParams();
@@ -35,25 +37,42 @@ export default function ChatArea() {
           {messages?.map((message) => <ChatBubble key={message._id} content={message.content} by={message.by} />)}
         </article>
       </div>
-      <form className="absolute max-w-3xl w-full bottom-0 left-1/2 -translate-x-1/2">
+      <form className="absolute max-w-3xl w-full bottom-0 left-1/2 -translate-x-1/2 border p-2 rounded-t-xl shadow bg-white/85 dark:bg-neutral-900/85 backdrop-blur">
         <Textarea
-          className="rounded-b-none border-b-0 rounded-t-xl pt-3 pb-15 min-h-28 resize-none bg-white/85 dark:bg-neutral-900/85 backdrop-blur shadow"
-          placeholder="Type your message here..."
-          onKeyDown={(e) => {
+          id="prompt-input"
+          ref={(ref) => ref?.focus()}
+          className="rounded-md p-3 resize-none focus-visible:ring-0 focus-visible:border-input"
+          placeholder="Ask anything..."
+          onKeyDown={async (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              if (e.target instanceof HTMLTextAreaElement && thread_id) {
-                createMessage({ thread_id, content: e.target.value, by: "human", model: selectedModel });
+              if (e.target instanceof HTMLTextAreaElement && thread_id && e.target.value) {
+                await createMessage({ thread_id, content: e.target.value, by: "human", model: selectedModel });
                 e.target.value = "";
               }
             }
           }}
         />
-        <ModelSelector
-          className="absolute bottom-3 left-3"
-          selectedModel={selectedModel}
-          onChange={(model) => setSelectedModel(model)}
-        />
+        <div className="mt-2 flex gap-1">
+          <ModelSelector selectedModel={selectedModel} onChange={(model) => setSelectedModel(model)} />
+          <Button variant="ghost" size="sm" type="button">
+            <Plus /> Add files
+          </Button>
+          <Button
+            size="sm"
+            className="ml-auto"
+            type="button"
+            onClick={() => {
+              const textarea = document.getElementById("prompt-input");
+              if (textarea instanceof HTMLTextAreaElement && thread_id && textarea.value) {
+                createMessage({ thread_id, content: textarea.value, by: "human", model: selectedModel });
+                textarea.value = "";
+              }
+            }}
+          >
+            Send <ArrowUp />
+          </Button>
+        </div>
       </form>
     </main>
   );
@@ -64,12 +83,25 @@ interface ChatBubbleProps {
   by: string;
 }
 function ChatBubble({ content, by }: ChatBubbleProps) {
+  if (!content && by !== "human") {
+    return <AnimatingChatBubble />;
+  }
   return (
     <section
-      className={cn("rounded-lg px-4 py-2 prose max-w-none", {
+      className={cn("rounded-lg px-4 py-2 prose dark:prose-invert max-w-none", {
         "bg-neutral-100 dark:bg-neutral-900 w-fit ml-auto": by === "human",
       })}
       dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
     />
+  );
+}
+
+function AnimatingChatBubble() {
+  return (
+    <div className="flex w-fit gap-1 h-11 items-center px-4">
+      <span className="size-2 animate-bounce rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
+      <span className="size-2 animate-bounce [animation-delay:300ms] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
+      <span className="size-2 animate-bounce [animation-delay:600ms] rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
+    </div>
   );
 }
