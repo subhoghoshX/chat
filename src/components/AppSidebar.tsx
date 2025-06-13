@@ -1,4 +1,4 @@
-import { Bird, MessageCircle } from "lucide-react";
+import { Bird, MessageCircle, X } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,11 +16,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Link, useNavigate, useParams } from "react-router";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import type { Id } from "convex/_generated/dataModel";
 
 const navMain = [
   {
@@ -55,6 +66,21 @@ export default function AppSidebar() {
       window.removeEventListener("keydown", handleCreateNewChat);
     };
   }, [navigate]);
+
+  const deleteThread = useMutation(api.threads.deleteThread).withOptimisticUpdate((localStore, args) => {
+    const prevThreads = localStore.getQuery(api.threads.getThreads);
+
+    if (prevThreads !== undefined) {
+      localStore.setQuery(
+        api.threads.getThreads,
+        {},
+        prevThreads.filter((thread) => thread._id !== args.id),
+      );
+    }
+  });
+
+  const [threadToDelete, setThreadToDelete] = useState<{ _id: Id<"threads">; threadId: string } | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden *:data-[sidebar=sidebar]:flex-row">
@@ -125,22 +151,65 @@ export default function AppSidebar() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
-            <SidebarGroupContent>
+            <SidebarGroupContent className="space-y-2">
               {threads?.map((thread) => (
-                <Link
-                  to={`/chat/${thread.id}`}
+                <div
                   key={thread._id}
                   className={cn(
-                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0",
+                    "hover:bg-sidebar-accent mx-2 hover:[&>div]:right-1 hover:[&>div]:bg-gradient-to-r  rounded-md relative group overflow-hidden",
                     { "bg-sidebar-accent": path?.split("/")[1] === thread.id },
                   )}
                 >
-                  <span className="line-clamp-1 w-[260px] whitespace-break-spaces">{thread.title}</span>
-                </Link>
+                  <Link to={`/chat/${thread.id}`} key={thread._id} className="block py-2 px-2">
+                    <span className="line-clamp-1">{thread.title}</span>
+                  </Link>
+                  <div className="absolute top-1/2 flex -translate-y-1/2 z-10 -right-10 from-transparent via-sidebar-accent to-sidebar-accent pointer-events-none transition-all">
+                    <span className="inline-block w-8"></span>
+                    <Button
+                      className="size-7 pointer-events-auto"
+                      size="icon"
+                      variant="destructive"
+                      onClick={() => {
+                        setThreadToDelete({ _id: thread._id, threadId: thread.id });
+                        setIsDeleteDialogOpen(true);
+                      }}
+                    >
+                      <X />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+        {threadToDelete && (
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your account and remove your data from our
+                  servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-red-500 dark:bg-red-400"
+                  onClick={() => {
+                    deleteThread({ id: threadToDelete._id, threadId: threadToDelete.threadId });
+                    // if the user is in the thread that's being deleted, re-route them to /
+                    if (path?.split("/")[1] === threadToDelete.threadId) {
+                      navigate("/");
+                    }
+                  }}
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </Sidebar>
     </Sidebar>
   );

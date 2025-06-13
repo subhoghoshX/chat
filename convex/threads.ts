@@ -29,6 +29,22 @@ export const updateThread = mutation({
   },
 });
 
+export const deleteThread = mutation({
+  args: { id: v.id("threads"), threadId: v.string() },
+  async handler(ctx, args) {
+    ctx.db.delete(args.id);
+
+    // also delete the messages in the thread
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_thread_id", (q) => q.eq("threadId", args.threadId))
+      .collect();
+    for (const message of messages) {
+      await ctx.db.delete(message._id);
+    }
+  },
+});
+
 export const generateThreadTitle = internalAction({
   args: { threadId: v.id("threads"), firstMessage: v.string() },
   async handler(ctx, args) {
