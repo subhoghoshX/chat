@@ -31,7 +31,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import type { Id } from "convex/_generated/dataModel";
+import type { DataModel } from "convex/_generated/dataModel";
+import { Input } from "./ui/input";
+
+type Thread = DataModel["threads"]["document"];
 
 const navMain = [
   {
@@ -79,7 +82,7 @@ export default function AppSidebar() {
     }
   });
 
-  const [threadToDelete, setThreadToDelete] = useState<{ _id: Id<"threads">; threadId: string } | null>(null);
+  const [threadToDelete, setThreadToDelete] = useState<Thread | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
@@ -153,31 +156,14 @@ export default function AppSidebar() {
           <SidebarGroup className="px-0">
             <SidebarGroupContent className="space-y-2">
               {threads?.map((thread) => (
-                <div
+                <Thread
                   key={thread._id}
-                  className={cn(
-                    "hover:bg-sidebar-accent mx-2 hover:[&>div]:right-1 hover:[&>div]:bg-gradient-to-r  rounded-md relative group overflow-hidden",
-                    { "bg-sidebar-accent": path?.split("/")[1] === thread.id },
-                  )}
-                >
-                  <Link to={`/chat/${thread.id}`} key={thread._id} className="block py-2 px-2">
-                    <span className="line-clamp-1">{thread.title}</span>
-                  </Link>
-                  <div className="absolute top-1/2 flex -translate-y-1/2 z-10 -right-10 from-transparent via-sidebar-accent to-sidebar-accent pointer-events-none transition-all">
-                    <span className="inline-block w-8"></span>
-                    <Button
-                      className="size-7 pointer-events-auto"
-                      size="icon"
-                      variant="destructive"
-                      onClick={() => {
-                        setThreadToDelete({ _id: thread._id, threadId: thread.id });
-                        setIsDeleteDialogOpen(true);
-                      }}
-                    >
-                      <X />
-                    </Button>
-                  </div>
-                </div>
+                  thread={thread}
+                  onDeleteBtnClick={(_thread) => {
+                    setThreadToDelete(_thread);
+                    setIsDeleteDialogOpen(true);
+                  }}
+                />
               ))}
             </SidebarGroupContent>
           </SidebarGroup>
@@ -196,9 +182,9 @@ export default function AppSidebar() {
                 <AlertDialogAction
                   className="bg-red-500 dark:bg-red-400"
                   onClick={() => {
-                    deleteThread({ id: threadToDelete._id, threadId: threadToDelete.threadId });
+                    deleteThread({ id: threadToDelete._id, threadId: threadToDelete.id });
                     // if the user is in the thread that's being deleted, re-route them to /
-                    if (path?.split("/")[1] === threadToDelete.threadId) {
+                    if (path?.split("/")[1] === threadToDelete.id) {
                       navigate("/");
                     }
                   }}
@@ -211,5 +197,85 @@ export default function AppSidebar() {
         )}
       </Sidebar>
     </Sidebar>
+  );
+}
+
+interface ThreadProps {
+  thread: Thread;
+  onDeleteBtnClick: (thread: Thread) => void;
+}
+
+function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
+  const [isThreadTitleEditing, setIsThreadTitleEditing] = useState(false);
+  const [newThreadTitle, setNewThreadTitle] = useState<string | null>(null);
+
+  const { "*": path } = useParams();
+
+  const updateThreadTitle = useMutation(api.threads.updateThread).withOptimisticUpdate((localStore, args) => {
+    const prevThreads = localStore.getQuery(api.threads.getThreads);
+
+    if (prevThreads !== undefined) {
+      const newThreads = prevThreads.map((thread) =>
+        thread._id === args.id ? { ...thread, title: args.title } : thread,
+      );
+      localStore.setQuery(api.threads.getThreads, {}, newThreads);
+    }
+  });
+
+  return (
+    <div
+      key={thread._id}
+      className={cn(
+        "hover:bg-sidebar-accent mx-2 hover:[&>div]:right-1 hover:[&>div]:bg-gradient-to-r  rounded-md relative group overflow-hidden",
+        { "bg-sidebar-accent": path?.split("/")[1] === thread.id },
+      )}
+    >
+      {!isThreadTitleEditing ? (
+        <Link
+          to={`/chat/${thread.id}`}
+          key={thread._id}
+          className="block py-2 px-2"
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setIsThreadTitleEditing(true);
+          }}
+        >
+          <span className="line-clamp-1">{thread.title}</span>
+        </Link>
+      ) : (
+        <Input
+          ref={(elem) => elem?.focus()}
+          value={newThreadTitle ?? thread.title}
+          onChange={(e) => setNewThreadTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && newThreadTitle?.trim()) {
+              updateThreadTitle({ id: thread._id, title: newThreadTitle });
+            }
+            if (e.key === "Escape") {
+              setNewThreadTitle(thread.title);
+            }
+            setIsThreadTitleEditing(false);
+          }}
+          onBlur={() => {
+            if (newThreadTitle) {
+              updateThreadTitle({ id: thread._id, title: newThreadTitle });
+            }
+            setIsThreadTitleEditing(false);
+          }}
+        />
+      )}
+      <div className="absolute top-1/2 flex -translate-y-1/2 z-10 -right-10 from-transparent via-sidebar-accent to-sidebar-accent pointer-events-none transition-all">
+        <span className="inline-block w-8"></span>
+        <Button
+          className="size-7 pointer-events-auto"
+          size="icon"
+          variant="destructive"
+          onClick={() => onDeleteBtnClick(thread)}
+        >
+          <X />
+        </Button>
+      </div>
+    </div>
   );
 }

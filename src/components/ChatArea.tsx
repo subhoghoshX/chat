@@ -5,7 +5,7 @@ import { Textarea } from "./ui/textarea";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Model } from "../../utils/supported-models";
 import type { Id } from "convex/_generated/dataModel";
 import { marked } from "marked";
@@ -60,6 +60,11 @@ export default function ChatArea() {
     }
   }
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, [])
+
   return (
     <main className="relative grow h-screen overflow-hidden">
       <SidebarTrigger className="absolute left-2 top-2" />
@@ -71,7 +76,7 @@ export default function ChatArea() {
       <form className="absolute max-w-3xl w-full bottom-0 left-1/2 -translate-x-1/2 border p-2 rounded-t-xl shadow bg-white/85 dark:bg-neutral-900/85 backdrop-blur">
         <Textarea
           id="prompt-input"
-          ref={(ref) => ref?.focus()}
+          ref={textareaRef}
           className="rounded-md p-3 resize-none focus-visible:ring-0 focus-visible:border-input"
           placeholder="Ask anything..."
           onKeyDown={async (e) => {
