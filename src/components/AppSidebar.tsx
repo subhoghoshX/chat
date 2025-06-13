@@ -249,13 +249,16 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
           value={newThreadTitle ?? thread.title}
           onChange={(e) => setNewThreadTitle(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && newThreadTitle?.trim()) {
-              updateThreadTitle({ id: thread._id, title: newThreadTitle });
+            if (e.key === "Enter") {
+              if (newThreadTitle?.trim()) {
+                updateThreadTitle({ id: thread._id, title: newThreadTitle });
+              }
+              setIsThreadTitleEditing(false);
             }
             if (e.key === "Escape") {
               setNewThreadTitle(thread.title);
+              setIsThreadTitleEditing(false);
             }
-            setIsThreadTitleEditing(false);
           }}
           onBlur={() => {
             if (newThreadTitle) {
