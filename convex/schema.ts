@@ -6,10 +6,13 @@ export default defineSchema({
     id: v.string(),
     title: v.string(),
     isPublic: v.boolean(),
+    userId: v.string(),
   }).index("by_thread_id", ["id"]),
+
   messages: defineTable({
     threadId: v.string(),
     content: v.string(),
     by: v.string(),
+    userId: v.string(),
   }).index("by_thread_id", ["threadId"]),
 });

@@ -1,16 +1,20 @@
 import { v } from "convex/values";
-import { internalAction, mutation, query } from "./_generated/server";
+import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { generateText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 export const createThread = mutation({
   args: { id: v.string() },
   async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
     await ctx.db.insert("threads", {
       id: args.id,
       title: "New Thread",
       isPublic: false,
+      userId: identity.subject,
     });
   },
 });
@@ -18,13 +22,27 @@ export const createThread = mutation({
 export const getThreads = query({
   args: {},
   async handler(ctx) {
-    return await ctx.db.query("threads").collect();
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
+    return await ctx.db
+      .query("threads")
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .collect();
   },
 });
 
 export const updateThread = mutation({
   args: { _id: v.id("threads"), title: v.string() },
   async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
+    const thread = await ctx.db.get(args._id);
+    if (!thread) throw new Error("Thread not found.");
+
+    if (thread.userId !== identity.subject) throw new Error("Not authorized to update thread.");
+
     ctx.db.patch(args._id, { title: args.title });
   },
 });
@@ -32,12 +50,21 @@ export const updateThread = mutation({
 export const deleteThread = mutation({
   args: { _id: v.id("threads"), threadId: v.string() },
   async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
+    const thread = await ctx.db.get(args._id);
+    if (!thread) throw new Error("Thread not found.");
+
+    if (thread.userId !== identity.subject) throw new Error("Not authorized to delete thread.");
+
     ctx.db.delete(args._id);
 
     // also delete the messages in the thread
     const messages = await ctx.db
       .query("messages")
       .withIndex("by_thread_id", (q) => q.eq("threadId", args.threadId))
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
       .collect();
     for (const message of messages) {
       await ctx.db.delete(message._id);
@@ -56,6 +83,13 @@ export const generateThreadTitle = internalAction({
       prompt: args.firstMessage,
     });
 
-    await ctx.runMutation(api.threads.updateThread, { _id: args._threadId, title: text });
+    await ctx.runMutation(internal.threads.internalUpdateThread, { _id: args._threadId, title: text });
+  },
+});
+
+export const internalUpdateThread = internalMutation({
+  args: { _id: v.id("threads"), title: v.string() },
+  async handler(ctx, args) {
+    ctx.db.patch(args._id, { title: args.title });
   },
 });
