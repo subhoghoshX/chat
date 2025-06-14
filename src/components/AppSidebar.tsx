@@ -1,4 +1,4 @@
-import { Bird, MessageCircle, X } from "lucide-react";
+import { Bird, LogIn, MessageCircle, X } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,11 +12,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { useMutation, useQuery } from "convex/react";
+import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Link, useNavigate, useParams } from "react-router";
 import { cn } from "@/lib/utils";
@@ -33,6 +32,7 @@ import {
 } from "./ui/alert-dialog";
 import type { DataModel } from "convex/_generated/dataModel";
 import { Input } from "./ui/input";
+import { SignInButton, UserButton } from "@clerk/clerk-react";
 
 type Thread = DataModel["threads"]["document"];
 
@@ -137,13 +137,21 @@ export default function AppSidebar() {
         </SidebarContent>
         <SidebarFooter className="gap-4">
           <ThemeToggle />
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage
-              src={`https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YXZhdGFyfGVufDB8fDB8fHww`}
-              alt="Guest User"
-            />
-            <AvatarFallback className="rounded-lg">A</AvatarFallback>
-          </Avatar>
+          <AuthLoading>
+            <span className="bg-sidebar-border inline-block size-8 animate-pulse rounded-lg"></span>
+          </AuthLoading>
+          <Unauthenticated>
+            <SignInButton>
+              <Button size="icon" variant="outline" className="size-8 cursor-pointer">
+                <LogIn className="size-4" />
+              </Button>
+            </SignInButton>
+          </Unauthenticated>
+          <Authenticated>
+            <div className="flex size-8 [&_.cl-avatarBox]:size-8! [&_.cl-avatarBox]:rounded-lg!">
+              <UserButton />
+            </div>
+          </Authenticated>
         </SidebarFooter>
       </Sidebar>
 
