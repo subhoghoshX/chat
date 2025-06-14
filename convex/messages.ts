@@ -7,10 +7,14 @@ import { internal } from "./_generated/api";
 export const createMessage = mutation({
   args: { threadId: v.string(), content: v.string(), by: v.string(), model: v.optional(v.string()) },
   async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
     await ctx.db.insert("messages", {
       threadId: args.threadId,
       content: args.content,
       by: args.by,
+      userId: identity.subject,
     });
 
     if (args.by === "human" && args.model) {
@@ -18,6 +22,7 @@ export const createMessage = mutation({
         threadId: args.threadId,
         content: "",
         by: args.model,
+        userId: identity.subject,
       });
 
       await ctx.scheduler.runAfter(0, internal.messages.getAiReply, {
@@ -44,9 +49,13 @@ export const createMessage = mutation({
 export const getMessages = query({
   args: { threadId: v.string() },
   async handler(ctx, { threadId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
     return await ctx.db
       .query("messages")
       .withIndex("by_thread_id", (q) => q.eq("threadId", threadId))
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
       .collect();
   },
 });

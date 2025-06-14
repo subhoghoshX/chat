@@ -22,7 +22,7 @@ export default function ChatArea() {
     if (prevMessages !== undefined) {
       localStore.setQuery(api.messages.getMessages, { threadId: args.threadId }, [
         ...prevMessages,
-        { _id: crypto.randomUUID() as Id<"messages">, _creationTime: Date.now(), ...args },
+        { _id: crypto.randomUUID() as Id<"messages">, _creationTime: Date.now(), userId: "user_temporary", ...args },
       ]);
     }
   });
@@ -39,6 +39,7 @@ export default function ChatArea() {
           ...args,
           title: "New Thread",
           isPublic: false,
+          userId: "user_temporary",
         },
       ]);
     }
