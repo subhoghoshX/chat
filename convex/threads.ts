@@ -43,7 +43,7 @@ export const updateThread = mutation({
 
     if (thread.userId !== identity.subject) throw new Error("Not authorized to update thread.");
 
-    ctx.db.patch(args._id, { title: args.title });
+    await ctx.db.patch(args._id, { title: args.title });
   },
 });
 

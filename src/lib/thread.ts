@@ -1,21 +1,8 @@
 import { api } from "../../convex/_generated/api";
 import type { DataModel, Id } from "convex/_generated/dataModel";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 
 export type Thread = DataModel["threads"]["document"];
-
-export function useThreads() {
-  const auth = useConvexAuth();
-  const userId = localStorage.getItem("userId");
-
-  const threads = useQuery(api.threads.getThreads, auth.isAuthenticated ? undefined : "skip");
-  const temporaryThreads = useQuery(
-    api.temporary_threads.get,
-    auth.isAuthenticated && userId ? { userId: userId } : "skip",
-  );
-
-  return auth.isAuthenticated ? threads : temporaryThreads;
-}
 
 export function useCreateThread() {
   return useMutation(api.threads.createThread).withOptimisticUpdate((localStore, args) => {
