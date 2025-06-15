@@ -5,8 +5,12 @@ import { useQuery } from "convex/react";
 import { Paperclip } from "lucide-react";
 import MarkdownItAsync from "markdown-it-async";
 import { useEffect, useState } from "react";
+import { fromAsyncCodeToHtml } from "@shikijs/markdown-it/async";
+import { codeToHtml } from "shiki";
 
 const md = MarkdownItAsync();
+
+md.use(fromAsyncCodeToHtml(codeToHtml, { theme: "vitesse-dark" }));
 
 export function ChatBubbleForAuthenticatedUser({ message }: { message: DataModel["messages"]["document"] }) {
   const [html, setHtml] = useState("");
