@@ -13,13 +13,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import ThemeToggle from "./ThemeToggle";
-import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/ThemeToggle";
+import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
 import { Link, useNavigate, useParams } from "react-router";
-import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { cn, getUserId } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,12 +28,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./ui/alert-dialog";
-import type { DataModel } from "convex/_generated/dataModel";
-import { Input } from "./ui/input";
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 import { SignInButton, UserButton } from "@clerk/clerk-react";
-
-type Thread = DataModel["threads"]["document"];
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useDeleteTemporaryThread, useUpdateTemporaryThreadTitle, type TemporaryThread } from "@/lib/thread";
+import { api } from "../../../convex/_generated/api";
 
 const navMain = [
   {
@@ -49,7 +48,9 @@ export default function AppSidebar() {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
   const [activeItem, setActiveItem] = useState(navMain[0]);
-  let threads = useQuery(api.threads.getThreads);
+
+  const userId = getUserId();
+  let threads = useQuery(api.temporary_threads.get, userId ? { userId: userId } : "skip");
   if (!threads) {
     const str = localStorage.getItem("threads");
     threads = str ? JSON.parse(str) : undefined;
@@ -77,19 +78,9 @@ export default function AppSidebar() {
     };
   }, [navigate]);
 
-  const deleteThread = useMutation(api.threads.deleteThread).withOptimisticUpdate((localStore, args) => {
-    const prevThreads = localStore.getQuery(api.threads.getThreads);
+  const deleteTemporaryThread = useDeleteTemporaryThread();
 
-    if (prevThreads !== undefined) {
-      localStore.setQuery(
-        api.threads.getThreads,
-        {},
-        prevThreads.filter((thread) => thread._id !== args._id),
-      );
-    }
-  });
-
-  const [threadToDelete, setThreadToDelete] = useState<Thread | null>(null);
+  const [temporaryThreadToDelete, setTemporaryThreadToDelet] = useState<TemporaryThread | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
@@ -175,7 +166,7 @@ export default function AppSidebar() {
                   key={thread._id}
                   thread={thread}
                   onDeleteBtnClick={(_thread) => {
-                    setThreadToDelete(_thread);
+                    setTemporaryThreadToDelet(_thread);
                     setIsDeleteDialogOpen(true);
                   }}
                 />
@@ -183,7 +174,15 @@ export default function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        {threadToDelete && (
+        <Unauthenticated>
+          <SidebarFooter>
+            <Alert>
+              <AlertTitle>Heads up!</AlertTitle>
+              <AlertDescription>For backing up your chat and access to more models. Login in.</AlertDescription>
+            </Alert>
+          </SidebarFooter>
+        </Unauthenticated>
+        {temporaryThreadToDelete && (
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -197,9 +196,13 @@ export default function AppSidebar() {
                 <AlertDialogAction
                   className="bg-red-500 dark:bg-red-400"
                   onClick={() => {
-                    deleteThread({ _id: threadToDelete._id, threadId: threadToDelete.id });
+                    deleteTemporaryThread({
+                      _id: temporaryThreadToDelete._id,
+                      threadId: temporaryThreadToDelete.id,
+                      userId: getUserId(),
+                    });
                     // if the user is in the thread that's being deleted, re-route them to /
-                    if (path?.split("/")[1] === threadToDelete.id) {
+                    if (path?.split("/")[1] === temporaryThreadToDelete.id) {
                       navigate("/");
                     }
                   }}
@@ -216,8 +219,8 @@ export default function AppSidebar() {
 }
 
 interface ThreadProps {
-  thread: Thread;
-  onDeleteBtnClick: (thread: Thread) => void;
+  thread: TemporaryThread;
+  onDeleteBtnClick: (thread: TemporaryThread) => void;
 }
 
 function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
@@ -226,16 +229,9 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
 
   const { "*": path } = useParams();
 
-  const updateThreadTitle = useMutation(api.threads.updateThread).withOptimisticUpdate((localStore, args) => {
-    const prevThreads = localStore.getQuery(api.threads.getThreads);
+  const updateTemporaryThreadTitle = useUpdateTemporaryThreadTitle();
 
-    if (prevThreads !== undefined) {
-      const newThreads = prevThreads.map((thread) =>
-        thread._id === args._id ? { ...thread, title: args.title } : thread,
-      );
-      localStore.setQuery(api.threads.getThreads, {}, newThreads);
-    }
-  });
+  const userId = getUserId();
 
   return (
     <div
@@ -266,7 +262,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               if (newThreadTitle?.trim()) {
-                updateThreadTitle({ _id: thread._id, title: newThreadTitle });
+                updateTemporaryThreadTitle({ _id: thread._id, title: newThreadTitle, userId });
               }
               setIsThreadTitleEditing(false);
             }
@@ -277,7 +273,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
           }}
           onBlur={() => {
             if (newThreadTitle) {
-              updateThreadTitle({ _id: thread._id, title: newThreadTitle });
+              updateTemporaryThreadTitle({ _id: thread._id, title: newThreadTitle, userId });
             }
             setIsThreadTitleEditing(false);
           }}
