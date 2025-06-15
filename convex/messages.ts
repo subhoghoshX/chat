@@ -1,11 +1,17 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { streamText } from "ai";
+import { FilePart, type ImagePart, streamText } from "ai";
 import { internal } from "./_generated/api";
 
 export const createMessage = mutation({
-  args: { threadId: v.string(), content: v.string(), by: v.string(), model: v.optional(v.string()) },
+  args: {
+    threadId: v.string(),
+    content: v.string(),
+    by: v.string(),
+    model: v.optional(v.string()),
+    files: v.array(v.object({ storageId: v.id("_storage"), type: v.string() })),
+  },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authorized.");
@@ -15,6 +21,7 @@ export const createMessage = mutation({
       content: args.content,
       by: args.by,
       userId: identity.subject,
+      files: args.files,
     });
 
     if (args.by === "human" && args.model) {
@@ -23,12 +30,14 @@ export const createMessage = mutation({
         content: "",
         by: args.model,
         userId: identity.subject,
+        files: [],
       });
 
       await ctx.scheduler.runAfter(0, internal.messages.getAiReply, {
         _id: aiMessageId,
         prompt: args.content,
         model: args.model,
+        files: args.files,
       });
 
       // if it's first message generate thread title
@@ -68,11 +77,26 @@ export const updateMessage = internalMutation({
 });
 
 export const getAiReply = internalAction({
-  args: { _id: v.id("messages"), prompt: v.string(), model: v.string() },
+  args: {
+    _id: v.id("messages"),
+    prompt: v.string(),
+    model: v.string(),
+    files: v.array(v.object({ storageId: v.id("_storage"), type: v.string() })),
+  },
   async handler(ctx, args) {
+    const fileContents: (ImagePart | FilePart)[] = [];
+    for (const file of args.files) {
+      const fileUrl = await ctx.storage.getUrl(file.storageId);
+      if (fileUrl) {
+        if (file.type.startsWith("image/")) fileContents.push({ type: "image" as const, image: fileUrl });
+        if (file.type === "application/pdf")
+          fileContents.push({ type: "file" as const, data: fileUrl, mediaType: "application/pdf" });
+      }
+    }
+
     const { textStream } = streamText({
       model: gateway(args.model),
-      prompt: args.prompt,
+      messages: [{ role: "user", content: [{ type: "text", text: args.prompt }, ...fileContents] }],
       onError(error: unknown) {
         console.log(error);
       },
@@ -87,5 +111,19 @@ export const getAiReply = internalAction({
         content: textRecievedSoFar,
       });
     }
+  },
+});
+
+export const generateUploadUrl = mutation({
+  args: {},
+  async handler(ctx) {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const getFileUrl = query({
+  args: { storageId: v.id("_storage") },
+  async handler(ctx, args) {
+    return await ctx.storage.getUrl(args.storageId);
   },
 });

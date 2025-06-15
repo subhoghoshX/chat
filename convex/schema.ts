@@ -14,6 +14,7 @@ export default defineSchema({
     content: v.string(),
     by: v.string(),
     userId: v.string(),
+    files: v.array(v.object({ storageId: v.id("_storage"), type: v.string() })),
   }).index("by_thread_id", ["threadId"]),
 
   // for unauthenticated users, these will be moved to

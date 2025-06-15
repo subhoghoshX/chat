@@ -33,6 +33,7 @@ export const promote = mutation({
           content: message.content,
           by: message.by,
           userId: identity.subject,
+          files: [],
         });
         await ctx.db.delete(message._id);
       }

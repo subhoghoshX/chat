@@ -2,22 +2,28 @@ import { useNavigate, useParams } from "react-router";
 import ModelSelector from "./ModelSelector";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Textarea } from "./ui/textarea";
-import { cn, getUserId } from "@/lib/utils";
+import { getUserId } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import type { Model } from "../../utils/supported-models";
-import { marked } from "marked";
 import { Button } from "./ui/button";
-import { ArrowUp, Plus } from "lucide-react";
-import { useCreateMessage, useCreateTemporaryMessage, useMessages } from "@/lib/message";
+import { ArrowUp, Plus, Image } from "lucide-react";
+import { useCreateMessage, useCreateTemporaryMessage } from "@/lib/message";
 import { useCreateTemporaryThread, useCreateThread } from "@/lib/thread";
-import { useConvexAuth } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
+import { ChatBubbleForAuthenticatedUser, ChatBubbleForUnauthenticatedUser } from "./ChatBubble";
 
 export default function ChatArea() {
   const { threadId } = useParams();
 
   const auth = useConvexAuth();
 
-  const messages = useMessages(threadId);
+  const messages = useQuery(api.messages.getMessages, auth.isAuthenticated && threadId ? { threadId } : "skip");
+  const temporaryMessages = useQuery(
+    api.temporary_messages.get,
+    !auth.isAuthenticated && threadId ? { userId: getUserId(), threadId } : "skip",
+  );
 
   const createMessage = useCreateMessage();
   const createTemporaryMessage = useCreateTemporaryMessage();
@@ -29,10 +35,36 @@ export default function ChatArea() {
 
   const navigate = useNavigate();
 
-  function submitFormHandler(prompt: string) {
+  const generateUploadUrl = useMutation(api.messages.generateUploadUrl);
+
+  async function storeImage(file: File) {
+    const postUrl = await generateUploadUrl();
+    const result = await fetch(postUrl, {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: selectedFile,
+    });
+
+    const { storageId } = await result.json();
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    return storageId as Id<"_storage">;
+  }
+
+  async function submitFormHandler(prompt: string) {
     if (threadId) {
       if (auth.isAuthenticated) {
-        createMessage({ threadId, content: prompt, by: "human", model: selectedModel });
+        const storageId = selectedFile ? await storeImage(selectedFile) : null;
+        createMessage({
+          threadId,
+          content: prompt,
+          by: "human",
+          model: selectedModel,
+          files: storageId && selectedFile ? [{ storageId, type: selectedFile.type }] : [],
+        });
       } else {
         const userId = getUserId();
         createTemporaryMessage({ threadId, content: prompt, by: "human", model: selectedModel, userId });
@@ -42,7 +74,14 @@ export default function ChatArea() {
       const id = crypto.randomUUID();
       if (auth.isAuthenticated) {
         createThread({ id });
-        createMessage({ threadId: id, content: prompt, by: "human", model: selectedModel });
+        const storageId = selectedFile ? await storeImage(selectedFile) : null;
+        createMessage({
+          threadId: id,
+          content: prompt,
+          by: "human",
+          model: selectedModel,
+          files: storageId && selectedFile ? [{ storageId, type: selectedFile.type }] : [],
+        });
       } else {
         const userId = getUserId();
         createTemporaryThread({ id, userId });
@@ -57,12 +96,20 @@ export default function ChatArea() {
     textareaRef.current?.focus();
   }, []);
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <main className="relative h-screen grow overflow-hidden">
       <SidebarTrigger className="absolute top-2 left-2" />
       <div className="h-full overflow-auto pt-4 pb-48">
         <article className="mx-auto max-w-3xl space-y-5">
-          {messages?.map((message) => <ChatBubble key={message._id} content={message.content} by={message.by} />)}
+          {auth.isAuthenticated
+            ? messages?.map((message) => <ChatBubbleForAuthenticatedUser key={message._id} message={message} />)
+            : temporaryMessages?.map((message) => (
+                <ChatBubbleForUnauthenticatedUser key={message._id} message={message} />
+              ))}
         </article>
       </div>
       <form className="absolute bottom-0 left-1/2 w-full max-w-3xl -translate-x-1/2 rounded-t-xl border bg-white/85 p-2 shadow backdrop-blur dark:bg-neutral-900/85">
@@ -83,8 +130,26 @@ export default function ChatArea() {
         />
         <div className="mt-2 flex gap-1">
           <ModelSelector selectedModel={selectedModel} onChange={(model) => setSelectedModel(model)} />
-          <Button variant="ghost" size="sm" type="button">
-            <Plus /> Add files
+          <Button variant="ghost" size="sm" type="button" className="relative">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="absolute inset-0 opacity-0"
+              accept="image/*, application/pdf"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setSelectedFile(file);
+              }}
+            />
+            {!selectedFile ? (
+              <>
+                <Plus /> Add files
+              </>
+            ) : (
+              <>
+                <Image /> {selectedFile.name}
+              </>
+            )}
           </Button>
           <Button
             size="sm"
@@ -103,33 +168,5 @@ export default function ChatArea() {
         </div>
       </form>
     </main>
-  );
-}
-
-interface ChatBubbleProps {
-  content: string;
-  by: string;
-}
-function ChatBubble({ content, by }: ChatBubbleProps) {
-  if (!content && by !== "human") {
-    return <AnimatingChatBubble />;
-  }
-  return (
-    <section
-      className={cn("prose dark:prose-invert max-w-none rounded-lg px-4 py-2", {
-        "ml-auto w-fit bg-neutral-100 dark:bg-neutral-900": by === "human",
-      })}
-      dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
-    />
-  );
-}
-
-function AnimatingChatBubble() {
-  return (
-    <div className="flex h-11 w-fit items-center gap-1 px-4">
-      <span className="size-2 animate-bounce rounded-full bg-neutral-300 dark:bg-neutral-900"></span>
-      <span className="size-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:300ms] [animation-fill-mode:both] dark:bg-neutral-900"></span>
-      <span className="size-2 animate-bounce rounded-full bg-neutral-300 [animation-delay:600ms] [animation-fill-mode:both] dark:bg-neutral-900"></span>
-    </div>
   );
 }
