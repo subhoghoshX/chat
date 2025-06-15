@@ -2,13 +2,26 @@ import { cn } from "@/lib/utils";
 import { api } from "../../convex/_generated/api";
 import type { DataModel } from "convex/_generated/dataModel";
 import { useQuery } from "convex/react";
-import { marked } from "marked";
 import { Paperclip } from "lucide-react";
+import MarkdownItAsync from "markdown-it-async";
+import { useEffect, useState } from "react";
+
+const md = MarkdownItAsync();
 
 export function ChatBubbleForAuthenticatedUser({ message }: { message: DataModel["messages"]["document"] }) {
+  const [html, setHtml] = useState("");
+  useEffect(() => {
+    if (!message.content) return;
+    async function renderMarkdown() {
+      setHtml(await md.renderAsync(message.content));
+    }
+    renderMarkdown();
+  }, [message.content]);
+
   if (!message.content && message.by !== "human") {
     return <AnimatingChatBubble />;
   }
+
   return (
     <div>
       {message.files.length > 0 && <FileBubble file={message.files[0]} />}
@@ -17,7 +30,7 @@ export function ChatBubbleForAuthenticatedUser({ message }: { message: DataModel
           "ml-auto w-fit bg-neutral-100 dark:bg-neutral-900": message.by === "human",
           "rounded-tr-md": message.files.length > 0,
         })}
-        dangerouslySetInnerHTML={{ __html: marked.parse(message.content) }}
+        dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
   );
@@ -58,6 +71,14 @@ interface ChatBubbleForUnauthenticatedUserProps {
 }
 
 export function ChatBubbleForUnauthenticatedUser({ message }: ChatBubbleForUnauthenticatedUserProps) {
+  const [html, setHtml] = useState("");
+  useEffect(() => {
+    if (!message.content) return;
+    async function renderMarkdown() {
+      setHtml(await md.renderAsync(message.content));
+    }
+    renderMarkdown();
+  }, [message.content]);
   if (!message.content && message.by !== "human") {
     return <AnimatingChatBubble />;
   }
@@ -66,7 +87,7 @@ export function ChatBubbleForUnauthenticatedUser({ message }: ChatBubbleForUnaut
       className={cn("prose dark:prose-invert max-w-none rounded-xl px-4 py-2", {
         "ml-auto w-fit bg-neutral-100 dark:bg-neutral-900": message.by === "human",
       })}
-      dangerouslySetInnerHTML={{ __html: marked.parse(message.content) }}
+      dangerouslySetInnerHTML={{ __html: html }}
     />
   );
 }
