@@ -17,6 +17,10 @@ import { ChatBubbleForAuthenticatedUser, ChatBubbleForUnauthenticatedUser } from
 export default function ChatArea() {
   const { threadId } = useParams();
 
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, [threadId]);
+
   const auth = useConvexAuth();
 
   const messages = useQuery(api.messages.getMessages, auth.isAuthenticated && threadId ? { threadId } : "skip");
