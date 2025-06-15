@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { generateText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 
 export const createThread = mutation({
   args: { id: v.string() },

@@ -15,9 +15,9 @@ import {
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/ThemeToggle";
-import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
+import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { Link, useNavigate, useParams } from "react-router";
-import { cn } from "@/lib/utils";
+import { cn, getUserId } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
@@ -62,7 +62,16 @@ export default function SidebarForAuthenticatedUser() {
 
   const navigate = useNavigate();
 
+  const promote = useMutation(api.promote.promote);
+
   useEffect(() => {
+    // in case the user had any chats in un-authenticated state
+    // move them to the permanent tables
+    const userId = getUserId();
+    if (userId) {
+      promote({ userId });
+    }
+    // ctrl + shift + O -> create new chat
     function handleCreateNewChat(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "O") {
         e.preventDefault();
@@ -74,7 +83,7 @@ export default function SidebarForAuthenticatedUser() {
     return () => {
       window.removeEventListener("keydown", handleCreateNewChat);
     };
-  }, [navigate]);
+  }, [navigate, promote]);
 
   const deleteThread = useDeleteThread();
 
