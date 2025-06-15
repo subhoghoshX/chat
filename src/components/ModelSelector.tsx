@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { type Model, supportedModels } from "../../utils/supported-models";
+import { useConvexAuth } from "convex/react";
 
 interface Props {
   selectedModel: Model;
@@ -14,6 +15,8 @@ interface Props {
 
 export default function ModelSelector({ className, selectedModel, onChange }: Props) {
   const [open, setOpen] = useState(false);
+
+  const auth = useConvexAuth();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -37,6 +40,7 @@ export default function ModelSelector({ className, selectedModel, onChange }: Pr
             <CommandGroup>
               {supportedModels.map((model) => (
                 <CommandItem
+                  disabled={!auth.isAuthenticated && model.for === "AUTHENTICATED"}
                   key={model.name}
                   value={model.name}
                   onSelect={(currentValue) => {

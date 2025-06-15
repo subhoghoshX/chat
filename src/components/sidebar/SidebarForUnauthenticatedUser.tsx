@@ -178,7 +178,13 @@ export default function AppSidebar() {
           <SidebarFooter>
             <Alert>
               <AlertTitle>Heads up!</AlertTitle>
-              <AlertDescription>For backing up your chat and access to more models. Login in.</AlertDescription>
+              <AlertDescription className="block">
+                For backing up your chat and access to more models,{" "}
+                <SignInButton>
+                  <a className="cursor-pointer font-semibold text-blue-500 underline">please log in</a>
+                </SignInButton>
+                .
+              </AlertDescription>
             </Alert>
           </SidebarFooter>
         </Unauthenticated>

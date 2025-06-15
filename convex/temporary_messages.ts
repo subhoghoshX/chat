@@ -29,7 +29,7 @@ export const create = mutation({
         .map((model) => model.name) as string[];
 
       if (!modelsForUnauthenticateduser.includes(args.model)) {
-        throw new Error("User is not authorized to user the model");
+        throw new Error("User is not authorized to use the model");
       }
 
       const aiMessageId = await ctx.db.insert("temporary_messages", {
