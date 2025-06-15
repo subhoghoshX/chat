@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { FilePart, type ImagePart, streamText } from "ai";
+import { type FilePart, type ImagePart, streamText } from "ai";
 import { internal } from "./_generated/api";
 
 export const createMessage = mutation({

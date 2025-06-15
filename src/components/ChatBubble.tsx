@@ -3,7 +3,7 @@ import { api } from "../../convex/_generated/api";
 import type { DataModel } from "convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { marked } from "marked";
-import { FileIcon, Paperclip } from "lucide-react";
+import { Paperclip } from "lucide-react";
 
 export function ChatBubbleForAuthenticatedUser({ message }: { message: DataModel["messages"]["document"] }) {
   if (!message.content && message.by !== "human") {
