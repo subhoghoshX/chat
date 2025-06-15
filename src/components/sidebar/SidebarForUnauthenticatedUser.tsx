@@ -80,7 +80,7 @@ export default function AppSidebar() {
 
   const deleteTemporaryThread = useDeleteTemporaryThread();
 
-  const [temporaryThreadToDelete, setTemporaryThreadToDelet] = useState<TemporaryThread | null>(null);
+  const [temporaryThreadToDelete, setTemporaryThreadToDelete] = useState<TemporaryThread | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
@@ -166,7 +166,7 @@ export default function AppSidebar() {
                   key={thread._id}
                   thread={thread}
                   onDeleteBtnClick={(_thread) => {
-                    setTemporaryThreadToDelet(_thread);
+                    setTemporaryThreadToDelete(_thread);
                     setIsDeleteDialogOpen(true);
                   }}
                 />
