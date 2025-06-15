@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
-import { generateText } from "ai";
+import { streamText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
 import { internal } from "./_generated/api";
 
@@ -28,6 +28,7 @@ export const getThreads = query({
     return await ctx.db
       .query("threads")
       .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .order("desc")
       .collect();
   },
 });
@@ -75,7 +76,7 @@ export const deleteThread = mutation({
 export const generateThreadTitle = internalAction({
   args: { _threadId: v.id("threads"), firstMessage: v.string() },
   async handler(ctx, args) {
-    const { text } = await generateText({
+    const { textStream } = streamText({
       model: gateway("vertex/gemini-2.0-flash-001"),
       system:
         "You are a helpful assistant that creates concise and informative titles for chat threads based on the user's first message.  Your titles should accurately reflect the topic or intent of the message." +
@@ -83,7 +84,12 @@ export const generateThreadTitle = internalAction({
       prompt: args.firstMessage,
     });
 
-    await ctx.runMutation(internal.threads.internalUpdateThread, { _id: args._threadId, title: text });
+    let textRecievedSoFar = "";
+
+    for await (const textPart of textStream) {
+      textRecievedSoFar += textPart;
+      await ctx.runMutation(internal.threads.internalUpdateThread, { _id: args._threadId, title: textRecievedSoFar });
+    }
   },
 });
 

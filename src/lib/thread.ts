@@ -10,7 +10,6 @@ export function useCreateThread() {
 
     if (prevThreads !== undefined) {
       localStore.setQuery(api.threads.getThreads, {}, [
-        ...prevThreads,
         {
           _id: crypto.randomUUID() as Id<"threads">,
           _creationTime: Date.now(),
@@ -19,6 +18,7 @@ export function useCreateThread() {
           isPublic: false,
           userId: "user_temporary",
         },
+        ...prevThreads,
       ]);
     }
   });
@@ -59,7 +59,6 @@ export function useCreateTemporaryThread() {
 
     if (prevThreads !== undefined) {
       localStore.setQuery(api.temporary_threads.get, { userId: args.userId }, [
-        ...prevThreads,
         {
           _id: crypto.randomUUID() as Id<"temporary_threads">,
           _creationTime: Date.now(),
@@ -68,6 +67,7 @@ export function useCreateTemporaryThread() {
           isPublic: false,
           userId: "user_temporary",
         },
+        ...prevThreads,
       ]);
     }
   });
