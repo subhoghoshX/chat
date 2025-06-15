@@ -2,48 +2,28 @@ import { useNavigate, useParams } from "react-router";
 import ModelSelector from "./ModelSelector";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Textarea } from "./ui/textarea";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { cn } from "@/lib/utils";
+import { cn, getUserId } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import type { Model } from "../../utils/supported-models";
-import type { Id } from "convex/_generated/dataModel";
 import { marked } from "marked";
 import { Button } from "./ui/button";
 import { ArrowUp, Plus } from "lucide-react";
+import { useCreateMessage, useCreateTemporaryMessage, useMessages } from "@/lib/message";
+import { useCreateTemporaryThread, useCreateThread } from "@/lib/thread";
+import { useConvexAuth } from "convex/react";
 
 export default function ChatArea() {
   const { threadId } = useParams();
-  const messages = useQuery(api.messages.getMessages, threadId ? { threadId } : "skip");
 
-  const createMessage = useMutation(api.messages.createMessage).withOptimisticUpdate((localStore, args) => {
-    const prevMessages = localStore.getQuery(api.messages.getMessages, { threadId: args.threadId });
+  const auth = useConvexAuth();
 
-    if (prevMessages !== undefined) {
-      localStore.setQuery(api.messages.getMessages, { threadId: args.threadId }, [
-        ...prevMessages,
-        { _id: crypto.randomUUID() as Id<"messages">, _creationTime: Date.now(), userId: "user_temporary", ...args },
-      ]);
-    }
-  });
+  const messages = useMessages(threadId);
 
-  const createThread = useMutation(api.threads.createThread).withOptimisticUpdate((localStore, args) => {
-    const prevThreads = localStore.getQuery(api.threads.getThreads, {});
+  const createMessage = useCreateMessage();
+  const createTemporaryMessage = useCreateTemporaryMessage();
 
-    if (prevThreads !== undefined) {
-      localStore.setQuery(api.threads.getThreads, {}, [
-        ...prevThreads,
-        {
-          _id: crypto.randomUUID() as Id<"threads">,
-          _creationTime: Date.now(),
-          ...args,
-          title: "New Thread",
-          isPublic: false,
-          userId: "user_temporary",
-        },
-      ]);
-    }
-  });
+  const createThread = useCreateThread();
+  const createTemporaryThread = useCreateTemporaryThread();
 
   const [selectedModel, setSelectedModel] = useState<Model>("vertex/gemini-2.0-flash-001");
 
@@ -51,12 +31,23 @@ export default function ChatArea() {
 
   function submitFormHandler(prompt: string) {
     if (threadId) {
-      createMessage({ threadId, content: prompt, by: "human", model: selectedModel });
+      if (auth.isAuthenticated) {
+        createMessage({ threadId, content: prompt, by: "human", model: selectedModel });
+      } else {
+        const userId = getUserId();
+        createTemporaryMessage({ threadId, content: prompt, by: "human", model: selectedModel, userId });
+      }
     } else {
       // it's a new chat then
       const id = crypto.randomUUID();
-      createThread({ id });
-      createMessage({ threadId: id, content: prompt, by: "human", model: selectedModel });
+      if (auth.isAuthenticated) {
+        createThread({ id });
+        createMessage({ threadId: id, content: prompt, by: "human", model: selectedModel });
+      } else {
+        const userId = getUserId();
+        createTemporaryThread({ id, userId });
+        createTemporaryMessage({ threadId: id, content: prompt, by: "human", model: selectedModel, userId });
+      }
       navigate(`/chat/${id}`);
     }
   }

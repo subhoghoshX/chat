@@ -1,9 +1,13 @@
 import { Route, Routes } from "react-router";
-import AppSidebar from "./components/AppSidebar";
 import ChatArea from "./components/ChatArea";
 import { SidebarProvider } from "./components/ui/sidebar";
+import { useConvexAuth } from "convex/react";
+import SidebarForAuthenticatedUser from "./components/sidebar/SidebarForAuthenticatedUser";
+import SidebarForUnauthenticatedUser from "./components/sidebar/SidebarForUnauthenticatedUser";
 
 export default function App() {
+  const auth = useConvexAuth();
+
   return (
     <SidebarProvider
       style={
@@ -12,7 +16,7 @@ export default function App() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      {auth.isAuthenticated ? <SidebarForAuthenticatedUser /> : <SidebarForUnauthenticatedUser />}
 
       <Routes>
         <Route path="/" element={<ChatArea />} />
