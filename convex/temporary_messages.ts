@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { supportedModels } from "../utils/supported-models";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { streamText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
 
@@ -100,5 +100,49 @@ export const getAiReply = internalAction({
         content: textRecievedSoFar,
       });
     }
+  },
+});
+
+export const branchOff = mutation({
+  args: { threadId: v.string(), messageId: v.id("temporary_messages"), userId: v.string() },
+  async handler(ctx, args) {
+    if (!args.userId) throw new Error("userId is required.");
+
+    const messages = await ctx.runQuery(api.temporary_messages.get, { threadId: args.threadId, userId: args.userId });
+    const messagesToCopy: typeof messages = [];
+    for (const message of messages) {
+      if (message._id === args.messageId) {
+        messagesToCopy.push(message);
+        break;
+      } else {
+        messagesToCopy.push(message);
+      }
+    }
+
+    const newThreadId = crypto.randomUUID();
+
+    for (const messageToCopy of messagesToCopy) {
+      await ctx.db.insert("temporary_messages", {
+        userId: args.userId,
+        threadId: newThreadId,
+        by: messageToCopy.by,
+        content: messageToCopy.content,
+      });
+    }
+
+    const thread = await ctx.db
+      .query("temporary_threads")
+      .withIndex("by_threadId", (q) => q.eq("id", args.threadId))
+      .first();
+    if (!thread) throw new Error("Thread not found");
+
+    ctx.db.insert("temporary_threads", {
+      id: newThreadId,
+      title: `🌿 ${thread.title}`,
+      userId: args.userId,
+      isPublic: false,
+    });
+
+    return newThreadId;
   },
 });

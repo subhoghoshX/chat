@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { gateway } from "@vercel/ai-sdk-gateway";
 import { type FilePart, type ImagePart, streamText } from "ai";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 export const createMessage = mutation({
   args: {
@@ -141,5 +141,51 @@ export const getUserAttachments = query({
     const files = messages.map((message) => message.files).flat();
 
     return files;
+  },
+});
+
+export const branchOff = mutation({
+  args: { threadId: v.string(), messageId: v.id("messages") },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
+    const messages = await ctx.runQuery(api.messages.getMessages, { threadId: args.threadId });
+    const messagesToCopy: typeof messages = [];
+    for (const message of messages) {
+      if (message._id === args.messageId) {
+        messagesToCopy.push(message);
+        break;
+      } else {
+        messagesToCopy.push(message);
+      }
+    }
+
+    const newThreadId = crypto.randomUUID();
+
+    for (const messageToCopy of messagesToCopy) {
+      await ctx.db.insert("messages", {
+        userId: identity.subject,
+        threadId: newThreadId,
+        by: messageToCopy.by,
+        content: messageToCopy.content,
+        files: messageToCopy.files,
+      });
+    }
+
+    const thread = await ctx.db
+      .query("threads")
+      .withIndex("by_threadId", (q) => q.eq("id", args.threadId))
+      .first();
+    if (!thread) throw new Error("Thread not found");
+
+    ctx.db.insert("threads", {
+      id: newThreadId,
+      title: `🌿 ${thread.title}`,
+      userId: identity.subject,
+      isPublic: false,
+    });
+
+    return newThreadId;
   },
 });

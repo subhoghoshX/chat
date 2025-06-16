@@ -3,7 +3,7 @@ import { SidebarTrigger } from "./ui/sidebar";
 import { getUserId } from "@/lib/utils";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { ChatBubbleForAuthenticatedUser, ChatBubbleForUnauthenticatedUser } from "./ChatBubble";
+import { MessageAuthenticated, MessageUnauthenticated } from "./ChatBubble";
 import ChatInput from "./ChatInput";
 
 export default function ChatArea() {
@@ -23,10 +23,8 @@ export default function ChatArea() {
       <div className="h-full overflow-auto pt-4 pb-48">
         <article className="mx-auto max-w-3xl space-y-5">
           {auth.isAuthenticated
-            ? messages?.map((message) => <ChatBubbleForAuthenticatedUser key={message._id} message={message} />)
-            : temporaryMessages?.map((message) => (
-                <ChatBubbleForUnauthenticatedUser key={message._id} message={message} />
-              ))}
+            ? messages?.map((message) => <MessageAuthenticated key={message._id} message={message} />)
+            : temporaryMessages?.map((message) => <MessageUnauthenticated key={message._id} message={message} />)}
         </article>
       </div>
       <ChatInput />
