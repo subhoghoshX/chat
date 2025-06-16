@@ -7,7 +7,7 @@ export default defineSchema({
     title: v.string(),
     isPublic: v.boolean(),
     userId: v.string(),
-  }).index("by_thread_id", ["id"]),
+  }).index("by_threadId", ["id"]),
 
   messages: defineTable({
     threadId: v.string(),
@@ -15,7 +15,9 @@ export default defineSchema({
     by: v.string(),
     userId: v.string(),
     files: v.array(v.object({ storageId: v.id("_storage"), type: v.string() })),
-  }).index("by_thread_id", ["threadId"]),
+  })
+    .index("by_threadId", ["threadId"])
+    .index("by_userId", ["userId"]),
 
   // for unauthenticated users, these will be moved to
   // permanent tables above when they authenticate
@@ -24,12 +26,12 @@ export default defineSchema({
     title: v.string(),
     isPublic: v.boolean(),
     userId: v.string(),
-  }).index("by_thread_id", ["id"]),
+  }).index("by_threadId", ["id"]),
 
   temporary_messages: defineTable({
     threadId: v.string(),
     content: v.string(),
     by: v.string(),
     userId: v.string(),
-  }).index("by_thread_id", ["threadId"]),
+  }).index("by_threadId", ["threadId"]),
 });

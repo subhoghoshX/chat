@@ -48,7 +48,7 @@ export const create = mutation({
       // if it's first message generate thread title
       const thread = await ctx.db
         .query("temporary_threads")
-        .withIndex("by_thread_id", (q) => q.eq("id", args.threadId))
+        .withIndex("by_threadId", (q) => q.eq("id", args.threadId))
         .first();
       if (thread && thread.title === "New Thread") {
         ctx.scheduler.runAfter(0, internal.temporary_threads.generateTitle, {
@@ -67,7 +67,7 @@ export const get = query({
 
     return await ctx.db
       .query("temporary_messages")
-      .withIndex("by_thread_id", (q) => q.eq("threadId", args.threadId))
+      .withIndex("by_threadId", (q) => q.eq("threadId", args.threadId))
       .filter((q) => q.eq(q.field("userId"), args.userId))
       .collect();
   },

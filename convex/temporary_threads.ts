@@ -60,7 +60,7 @@ export const deleteThread = mutation({
     // also delete the messages in the thread
     const messages = await ctx.db
       .query("temporary_messages")
-      .withIndex("by_thread_id", (q) => q.eq("threadId", args.threadId))
+      .withIndex("by_threadId", (q) => q.eq("threadId", args.threadId))
       .filter((q) => q.eq(q.field("userId"), args.userId))
       .collect();
     for (const message of messages) {

@@ -23,7 +23,7 @@ export const promote = mutation({
 
       const messages = await ctx.db
         .query("temporary_messages")
-        .withIndex("by_thread_id", (q) => q.eq("threadId", thread.id))
+        .withIndex("by_threadId", (q) => q.eq("threadId", thread.id))
         .filter((q) => q.eq(q.field("userId"), args.userId))
         .collect();
 
