@@ -17,7 +17,7 @@ import FirstSidebar from "./FirstSidebar";
 import ThreadsAuthenticated from "./ThreadsAuthenticated";
 import ThreadsUnauthenticated from "./ThreadsUnauthenticated";
 
-export default function SidebarForAuthenticatedUser() {
+export default function AppSidebar() {
   const auth = useConvexAuth();
 
   return (

@@ -1,14 +1,28 @@
-import { Route, Routes } from "react-router";
+import { Route, Routes, useParams } from "react-router";
 import ChatArea from "./components/ChatArea";
 import { SidebarProvider } from "./components/ui/sidebar";
 import AppSidebar from "./components/sidebar/AppSidebar";
+import Settings from "./components/Settings";
+import { useEffect } from "react";
+import { applyColorScheme } from "./lib/colorscheme";
 
 export default function App() {
+  const { "*": path } = useParams();
+
+  useEffect(() => {
+    const colorschemeName = localStorage.getItem("colorscheme");
+    if (colorschemeName === null || colorschemeName === "default") {
+      return;
+    } else {
+      applyColorScheme(colorschemeName);
+    }
+  }, []);
+
   return (
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "350px",
+          "--sidebar-width": path !== "settings" ? "350px" : "49px",
         } as React.CSSProperties
       }
     >
@@ -17,6 +31,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<ChatArea />} />
         <Route path="/chat/:threadId" element={<ChatArea />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </SidebarProvider>
   );

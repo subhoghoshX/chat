@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import {
   Sidebar,
   SidebarContent,
@@ -16,12 +16,11 @@ import ThemeToggle from "../ThemeToggle";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Button } from "../ui/button";
-import { useState } from "react";
 
 const navMain = [
   {
     title: "Chats",
-    url: "#",
+    url: "/",
     icon: MessageCircle,
     isActive: true,
   },
@@ -34,13 +33,11 @@ const navMain = [
 ];
 
 export default function FirstSidebar() {
-  // Note: I'm using state to show active item.
-  // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = useState(navMain[0]);
-
   const { setOpen } = useSidebar();
 
-  const router = useParams()
+  const { "*": path } = useParams();
+
+  const navigate = useNavigate();
 
   return (
     <Sidebar collapsible="none" className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r">
@@ -69,10 +66,10 @@ export default function FirstSidebar() {
                       hidden: false,
                     }}
                     onClick={() => {
-                      setActiveItem(item);
+                      navigate(item.url);
                       setOpen(true);
                     }}
-                    isActive={activeItem?.title === item.title}
+                    isActive={item.url === "/settings" ? path === "settings" : path !== "settings"}
                     className="px-2.5 md:px-2"
                   >
                     <item.icon />

@@ -43,7 +43,7 @@ export const createMessage = mutation({
       // if it's first message generate thread title
       const thread = await ctx.db
         .query("threads")
-        .withIndex("by_thread_id", (q) => q.eq("id", args.threadId))
+        .withIndex("by_threadId", (q) => q.eq("id", args.threadId))
         .first();
       if (thread && thread.title === "New Thread") {
         ctx.scheduler.runAfter(0, internal.threads.generateThreadTitle, {
@@ -63,7 +63,7 @@ export const getMessages = query({
 
     return await ctx.db
       .query("messages")
-      .withIndex("by_thread_id", (q) => q.eq("threadId", threadId))
+      .withIndex("by_threadId", (q) => q.eq("threadId", threadId))
       .filter((q) => q.eq(q.field("userId"), identity.subject))
       .collect();
   },
@@ -125,5 +125,21 @@ export const getFileUrl = query({
   args: { storageId: v.id("_storage") },
   async handler(ctx, args) {
     return await ctx.storage.getUrl(args.storageId);
+  },
+});
+
+export const getUserAttachments = query({
+  args: {},
+  async handler(ctx) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .collect();
+    const files = messages.map((message) => message.files).flat();
+
+    return files;
   },
 });
