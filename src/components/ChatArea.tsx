@@ -20,7 +20,7 @@ export default function ChatArea() {
   return (
     <main className="relative h-screen grow overflow-hidden">
       <SidebarTrigger className="absolute top-2 left-2" />
-      {(auth.isAuthenticated ? !messages?.length : !temporaryMessages?.length) && <WelcomeQuestions />}
+      {(auth.isAuthenticated ? messages?.length : temporaryMessages?.length) === 0 && <WelcomeQuestions />}
       <div className="h-full overflow-auto pt-4 pb-48">
         <article className="mx-auto max-w-3xl space-y-5">
           {auth.isAuthenticated
