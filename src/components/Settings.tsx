@@ -2,7 +2,7 @@ import { SignInButton, useUser } from "@clerk/clerk-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { Bug, ImageIcon, Lightbulb, LoaderCircle } from "lucide-react";
+import { Bug, FileIcon, FileText, ImageIcon, Lightbulb, LoaderCircle } from "lucide-react";
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
 import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
@@ -127,10 +127,14 @@ export default function Settings() {
 function Attachments() {
   const userAttachments = useQuery(api.messages.getUserAttachments);
 
-  return <ul>{userAttachments?.map((attachment) => <Attachment {...attachment} key={attachment.storageId} />)}</ul>;
+  return (
+    <ul className="space-y-2">
+      {userAttachments?.map((attachment) => <Attachment {...attachment} key={attachment.storageId} />)}
+    </ul>
+  );
 }
 
-function Attachment({ storageId, type }: { storageId: Id<"_storage">; type: string }) {
+function Attachment({ storageId, type, name }: { storageId: Id<"_storage">; type: string; name: string }) {
   const fileUrl = useQuery(api.messages.getFileUrl, { storageId });
 
   if (!fileUrl) return;
@@ -139,8 +143,8 @@ function Attachment({ storageId, type }: { storageId: Id<"_storage">; type: stri
     <li>
       <a href={fileUrl} target="_blank" className="flex items-center gap-2">
         <Alert>
-          <ImageIcon />
-          <AlertTitle>{type}</AlertTitle>
+          {type.startsWith("image/") ? <ImageIcon /> : <FileText />}
+          <AlertTitle>{name}</AlertTitle>
         </Alert>
       </a>
     </li>

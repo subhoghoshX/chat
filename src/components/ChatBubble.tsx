@@ -2,7 +2,7 @@ import { cn, getUserId } from "@/lib/utils";
 import { api } from "../../convex/_generated/api";
 import type { DataModel } from "convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Check, Copy, Paperclip, Split } from "lucide-react";
+import { Check, Copy, FileText, Split } from "lucide-react";
 import MarkdownItAsync from "markdown-it-async";
 import { useEffect, useState } from "react";
 import { fromAsyncCodeToHtml } from "@shikijs/markdown-it/async";
@@ -75,7 +75,7 @@ function FileBubble({ file }: { file: DataModel["messages"]["document"]["files"]
         target="_blank"
         className="mb-2 ml-auto flex w-fit items-center gap-2 rounded-lg bg-neutral-100 px-4 py-2 text-sm dark:bg-neutral-900"
       >
-        <Paperclip className="size-4" /> Attachment
+        <FileText className="size-4" /> {file.name}
       </a>
     );
 }

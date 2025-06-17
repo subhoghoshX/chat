@@ -11,7 +11,7 @@ export const createMessage = mutation({
     content: v.string(),
     by: v.string(),
     model: v.optional(v.string()),
-    files: v.array(v.object({ storageId: v.id("_storage"), type: v.string() })),
+    files: v.array(v.object({ storageId: v.id("_storage"), type: v.string(), name: v.string() })),
   },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();

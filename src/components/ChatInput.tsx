@@ -1,4 +1,4 @@
-import { ArrowUp, ImageIcon, Plus } from "lucide-react";
+import { ArrowUp, FileText, ImageIcon, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import ModelSelector from "./ModelSelector";
@@ -60,6 +60,7 @@ export default function InputForm() {
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+      setSelectedFile(null);
     }
 
     return storageId as Id<"_storage">;
@@ -78,7 +79,7 @@ export default function InputForm() {
           content: prompt,
           by: "human",
           model: selectedModel,
-          files: storageId && selectedFile ? [{ storageId, type: selectedFile.type }] : [],
+          files: storageId && selectedFile ? [{ storageId, type: selectedFile.type, name: selectedFile.name }] : [],
         });
       } else {
         const userId = getUserId();
@@ -95,7 +96,7 @@ export default function InputForm() {
           content: prompt,
           by: "human",
           model: selectedModel,
-          files: storageId && selectedFile ? [{ storageId, type: selectedFile.type }] : [],
+          files: storageId && selectedFile ? [{ storageId, type: selectedFile.type, name: selectedFile.name }] : [],
         });
       } else {
         const userId = getUserId();
@@ -142,7 +143,7 @@ export default function InputForm() {
               </>
             ) : (
               <>
-                <ImageIcon /> {selectedFile.name}
+                {selectedFile.type.startsWith("image/") ? <ImageIcon /> : <FileText />} {selectedFile.name}
               </>
             )}
           </Button>
