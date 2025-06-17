@@ -7,7 +7,7 @@ import { useCreateTemporaryThread, useCreateThread } from "@/lib/thread";
 import { useEffect, useRef, useState } from "react";
 import type { Model } from "utils/supported-models";
 import { useNavigate, useParams } from "react-router";
-import { useConvexAuth, useMutation } from "convex/react";
+import { Authenticated, useConvexAuth, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { getUserId } from "@/lib/utils";
@@ -124,27 +124,29 @@ export default function InputForm() {
       />
       <div className="mt-2 flex gap-1">
         <ModelSelector selectedModel={selectedModel} onChange={(model) => setSelectedModel(model)} />
-        <Button variant="ghost" size="sm" type="button" className="relative">
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="absolute inset-0 opacity-0"
-            accept="image/*, application/pdf"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) setSelectedFile(file);
-            }}
-          />
-          {!selectedFile ? (
-            <>
-              <Plus /> Add files
-            </>
-          ) : (
-            <>
-              <ImageIcon /> {selectedFile.name}
-            </>
-          )}
-        </Button>
+        <Authenticated>
+          <Button variant="ghost" size="sm" type="button" className="relative">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="absolute inset-0 opacity-0"
+              accept="image/*, application/pdf"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setSelectedFile(file);
+              }}
+            />
+            {!selectedFile ? (
+              <>
+                <Plus /> Add files
+              </>
+            ) : (
+              <>
+                <ImageIcon /> {selectedFile.name}
+              </>
+            )}
+          </Button>
+        </Authenticated>
         <Button
           size="sm"
           className="ml-auto"

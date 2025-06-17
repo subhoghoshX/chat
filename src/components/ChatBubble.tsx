@@ -47,7 +47,7 @@ export function MessageAuthenticated({ message }: { message: DataModel["messages
   ) : (
     <div className="group">
       <section
-        className={cn("prose dark:prose-invert max-w-none rounded-xl bg-neutral-50/50 px-4 dark:bg-neutral-950")}
+        className={cn("prose dark:prose-invert max-w-none rounded-xl px-4 dark:bg-neutral-950")}
         dangerouslySetInnerHTML={{ __html: html }}
       />
       <div className={cn("mt-1 pl-4 opacity-0 transition group-hover:opacity-100")}>
@@ -109,7 +109,7 @@ export function MessageUnauthenticated({ message }: { message: DataModel["tempor
   ) : (
     <div className="group">
       <section
-        className={cn("prose dark:prose-invert max-w-none rounded-xl bg-neutral-50/50 px-4 dark:bg-neutral-950")}
+        className={cn("prose dark:prose-invert max-w-none rounded-xl px-4 dark:bg-neutral-950")}
         dangerouslySetInnerHTML={{ __html: html }}
       />
       <div className={cn("mt-1 pl-4 opacity-0 transition group-hover:opacity-100")}>
