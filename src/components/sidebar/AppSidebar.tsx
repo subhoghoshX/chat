@@ -16,9 +16,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import FirstSidebar from "./FirstSidebar";
 import ThreadsAuthenticated from "./ThreadsAuthenticated";
 import ThreadsUnauthenticated from "./ThreadsUnauthenticated";
+import { useState } from "react";
 
 export default function AppSidebar() {
   const auth = useConvexAuth();
+
+  const [text, setText] = useState("");
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden *:data-[sidebar=sidebar]:flex-row">
@@ -34,12 +37,12 @@ export default function AppSidebar() {
             </TooltipTrigger>
             <TooltipContent>Ctrl/Cmd + Shift + O</TooltipContent>
           </Tooltip>
-          <SidebarInput placeholder="Search threads..." />
+          <SidebarInput placeholder="Search threads..." value={text} onChange={(e) => setText(e.target.value)} />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent className="space-y-2">
-              {auth.isAuthenticated ? <ThreadsAuthenticated /> : <ThreadsUnauthenticated />}
+              {auth.isAuthenticated ? <ThreadsAuthenticated text={text} /> : <ThreadsUnauthenticated text={text} />}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>

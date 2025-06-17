@@ -10,7 +10,11 @@ import { Share, X } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import ShareThreadConfirmDialog from "./ShareThreadConfirmDialog";
 
-export default function ThreadsAuthenticated() {
+interface Props {
+  text: string;
+}
+
+export default function ThreadsAuthenticated({ text }: Props) {
   let threads = useQuery(api.threads.getThreads);
   if (!threads) {
     const str = localStorage.getItem("threads");
@@ -18,6 +22,8 @@ export default function ThreadsAuthenticated() {
   } else {
     localStorage.setItem("threads", JSON.stringify(threads));
   }
+
+  const filteredThreads = threads?.filter((thread) => thread.title.toLowerCase().includes(text.toLowerCase()));
 
   const { "*": path } = useParams();
 
@@ -46,7 +52,7 @@ export default function ThreadsAuthenticated() {
 
   return (
     <>
-      {threads?.map((thread) => (
+      {filteredThreads?.map((thread) => (
         <Thread
           key={thread._id}
           thread={thread}

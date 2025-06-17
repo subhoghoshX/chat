@@ -9,7 +9,11 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 
-export default function ThreadsUnauthenticated() {
+interface Props {
+  text: string;
+}
+
+export default function ThreadsUnauthenticated({ text }: Props) {
   const userId = getUserId();
   let threads = useQuery(api.temporary_threads.get, userId ? { userId: userId } : "skip");
   if (!threads) {
@@ -18,6 +22,8 @@ export default function ThreadsUnauthenticated() {
   } else {
     localStorage.setItem("threads", JSON.stringify(threads));
   }
+
+  const filteredThreads = threads?.filter((thread) => thread.title.toLowerCase().includes(text.toLowerCase()));
 
   const { "*": path } = useParams();
 
@@ -30,7 +36,7 @@ export default function ThreadsUnauthenticated() {
 
   return (
     <>
-      {threads?.map((thread) => (
+      {filteredThreads?.map((thread) => (
         <Thread
           key={thread._id}
           thread={thread}
