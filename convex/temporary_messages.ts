@@ -2,8 +2,9 @@ import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { supportedModels } from "../utils/supported-models";
 import { api, internal } from "./_generated/api";
-import { streamText } from "ai";
+import { ModelMessage, streamText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
+import { temporaryMessageFields } from "./schema";
 
 export const create = mutation({
   args: {
@@ -32,6 +33,11 @@ export const create = mutation({
         throw new Error("User is not authorized to use the model");
       }
 
+      const prevMessages = await ctx.db
+        .query("temporary_messages")
+        .withIndex("by_threadId", (q) => q.eq("threadId", args.threadId))
+        .collect();
+
       const aiMessageId = await ctx.db.insert("temporary_messages", {
         threadId: args.threadId,
         content: "",
@@ -41,8 +47,8 @@ export const create = mutation({
 
       await ctx.scheduler.runAfter(0, internal.temporary_messages.getAiReply, {
         _id: aiMessageId,
-        prompt: args.content,
         model: args.model,
+        prevMessages: prevMessages,
       });
 
       // if it's first message generate thread title
@@ -81,11 +87,21 @@ export const update = internalMutation({
 });
 
 export const getAiReply = internalAction({
-  args: { _id: v.id("temporary_messages"), prompt: v.string(), model: v.string() },
+  args: {
+    _id: v.id("temporary_messages"),
+    model: v.string(),
+    prevMessages: v.array(
+      v.object({ ...temporaryMessageFields, _id: v.id("temporary_messages"), _creationTime: v.number() }),
+    ),
+  },
   async handler(ctx, args) {
+    const messagesToFeedAi: ModelMessage[] = args.prevMessages.map((message) => ({
+      role: message.by === "human" ? "user" : "assistant",
+      content: [{ type: "text", text: message.content }],
+    }));
     const { textStream } = streamText({
       model: gateway(args.model),
-      prompt: args.prompt,
+      messages: messagesToFeedAi,
       onError(error: unknown) {
         console.log(error);
       },

@@ -1,8 +1,9 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { type FilePart, type ImagePart, streamText } from "ai";
+import { type FilePart, type ImagePart, ModelMessage, streamText } from "ai";
 import { api, internal } from "./_generated/api";
+import { messageFields } from "./schema";
 
 export const createMessage = mutation({
   args: {
@@ -25,6 +26,11 @@ export const createMessage = mutation({
     });
 
     if (args.by === "human" && args.model) {
+      const prevMessages = await ctx.db
+        .query("messages")
+        .withIndex("by_threadId", (q) => q.eq("threadId", args.threadId))
+        .collect();
+
       const aiMessageId = await ctx.db.insert("messages", {
         threadId: args.threadId,
         content: "",
@@ -35,9 +41,8 @@ export const createMessage = mutation({
 
       await ctx.scheduler.runAfter(0, internal.messages.getAiReply, {
         _id: aiMessageId,
-        prompt: args.content,
         model: args.model,
-        files: args.files,
+        prevMessages,
       });
 
       // if it's first message generate thread title
@@ -96,24 +101,39 @@ export const updateMessage = internalMutation({
 export const getAiReply = internalAction({
   args: {
     _id: v.id("messages"),
-    prompt: v.string(),
     model: v.string(),
-    files: v.array(v.object({ storageId: v.id("_storage"), type: v.string() })),
+    prevMessages: v.array(v.object({ ...messageFields, _id: v.id("messages"), _creationTime: v.number() })),
   },
   async handler(ctx, args) {
-    const fileContents: (ImagePart | FilePart)[] = [];
-    for (const file of args.files) {
-      const fileUrl = await ctx.storage.getUrl(file.storageId);
-      if (fileUrl) {
-        if (file.type.startsWith("image/")) fileContents.push({ type: "image" as const, image: fileUrl });
-        if (file.type === "application/pdf")
-          fileContents.push({ type: "file" as const, data: fileUrl, mediaType: "application/pdf" });
-      }
-    }
+    const messagesToFeedAi: ModelMessage[] = await Promise.all(
+      args.prevMessages.map(async (message) => {
+        const fileContents: (ImagePart | FilePart)[] = [];
+        for (const file of message.files) {
+          const fileUrl = await ctx.storage.getUrl(file.storageId);
+          if (fileUrl) {
+            if (file.type.startsWith("image/")) fileContents.push({ type: "image" as const, image: fileUrl });
+            if (file.type === "application/pdf")
+              fileContents.push({ type: "file" as const, data: fileUrl, mediaType: "application/pdf" });
+          }
+        }
+
+        if (message.by === "human") {
+          return {
+            role: "user",
+            content: [{ type: "text", text: message.content }, ...fileContents],
+          };
+        } else {
+          return {
+            role: "assistant",
+            content: [{ type: "text", text: message.content }],
+          };
+        }
+      }),
+    );
 
     const { textStream } = streamText({
       model: gateway(args.model),
-      messages: [{ role: "user", content: [{ type: "text", text: args.prompt }, ...fileContents] }],
+      messages: messagesToFeedAi,
       onError(error: unknown) {
         console.log(error);
       },
