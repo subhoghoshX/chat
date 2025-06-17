@@ -5,6 +5,7 @@ import AppSidebar from "./components/sidebar/AppSidebar";
 import Settings from "./components/Settings";
 import { useEffect } from "react";
 import { applyColorScheme } from "./lib/colorscheme";
+import SharedThread from "./components/SharedThread";
 
 export default function App() {
   const { "*": path } = useParams();
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/" element={<ChatArea />} />
         <Route path="/chat/:threadId" element={<ChatArea />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/shared/:_threadId" element={<SharedThread />} />
       </Routes>
     </SidebarProvider>
   );

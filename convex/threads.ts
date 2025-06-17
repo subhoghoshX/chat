@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { streamText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 export const createThread = mutation({
   args: { id: v.string() },
@@ -97,5 +97,56 @@ export const internalUpdateThread = internalMutation({
   args: { _id: v.id("threads"), title: v.string() },
   async handler(ctx, args) {
     ctx.db.patch(args._id, { title: args.title });
+  },
+});
+
+export const share = mutation({
+  args: { _id: v.id("threads") },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized to share the thread.");
+
+    const thread = await ctx.db.get(args._id);
+
+    if (!thread) throw new Error("Thread not found.");
+
+    await ctx.db.patch(thread._id, { isPublic: true });
+
+    return thread._id;
+  },
+});
+
+export const cloneToCurrentUser = mutation({
+  args: { _id: v.id("threads") },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
+    const thread = await ctx.db.get(args._id);
+
+    if (!thread) throw new Error("Thread not found.");
+    if (!thread.isPublic) throw new Error("Thread is not shared");
+
+    const newThreadId = crypto.randomUUID();
+
+    await ctx.db.insert("threads", {
+      id: newThreadId,
+      isPublic: false,
+      title: thread.title,
+      userId: identity.subject,
+    });
+
+    const messages = await ctx.runQuery(api.messages.getMessages, { threadId: thread.id });
+    for (const message of messages) {
+      await ctx.db.insert("messages", {
+        userId: identity.subject,
+        threadId: newThreadId,
+        by: message.by,
+        content: message.content,
+        files: message.files,
+      });
+    }
+
+    return newThreadId;
   },
 });

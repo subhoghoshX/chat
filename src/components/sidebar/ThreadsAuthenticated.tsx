@@ -6,8 +6,9 @@ import { Link, useNavigate, useParams } from "react-router";
 import DeleteThreadConfirmDialog from "./DeleteThreadConfirmDialog";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { X } from "lucide-react";
+import { Share, X } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
+import ShareThreadConfirmDialog from "./ShareThreadConfirmDialog";
 
 export default function ThreadsAuthenticated() {
   let threads = useQuery(api.threads.getThreads);
@@ -38,6 +39,11 @@ export default function ThreadsAuthenticated() {
     }
   }, [navigate, promote]);
 
+  const [threadToShare, setThreadToShare] = useState<Thread | null>(null);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  const shareThread = useMutation(api.threads.share);
+
   return (
     <>
       {threads?.map((thread) => (
@@ -47,6 +53,10 @@ export default function ThreadsAuthenticated() {
           onDeleteBtnClick={(_thread) => {
             setThreadToDelete(_thread);
             setIsDeleteDialogOpen(true);
+          }}
+          onShareBtnClick={(_thread) => {
+            setThreadToShare(_thread);
+            setIsShareDialogOpen(true);
           }}
         />
       ))}
@@ -63,6 +73,13 @@ export default function ThreadsAuthenticated() {
           }}
         />
       )}
+      {threadToShare && (
+        <ShareThreadConfirmDialog
+          isOpen={isShareDialogOpen}
+          setIsOpen={setIsShareDialogOpen}
+          onGenerateBtnClick={() => shareThread({ _id: threadToShare._id })}
+        />
+      )}
     </>
   );
 }
@@ -70,9 +87,10 @@ export default function ThreadsAuthenticated() {
 interface ThreadProps {
   thread: Thread;
   onDeleteBtnClick: (thread: Thread) => void;
+  onShareBtnClick: (thread: Thread) => void;
 }
 
-function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
+function Thread({ thread, onDeleteBtnClick, onShareBtnClick }: ThreadProps) {
   const [isThreadTitleEditing, setIsThreadTitleEditing] = useState(false);
   const [newThreadTitle, setNewThreadTitle] = useState<string | null>(null);
 
@@ -84,7 +102,7 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
     <div
       key={thread._id}
       className={cn(
-        "hover:bg-sidebar-accent group relative mx-2 overflow-hidden rounded-md hover:[&>div]:right-1 hover:[&>div]:bg-gradient-to-r",
+        "hover:bg-sidebar-accent group relative mx-2 overflow-hidden rounded-md hover:[&_#thread-gradient]:bg-gradient-to-r hover:[&>div]:right-1",
         { "bg-sidebar-accent": path?.split("/")[1] === thread.id },
       )}
     >
@@ -126,16 +144,29 @@ function Thread({ thread, onDeleteBtnClick }: ThreadProps) {
           }}
         />
       )}
-      <div className="via-sidebar-accent to-sidebar-accent pointer-events-none absolute top-1/2 -right-10 z-10 flex -translate-y-1/2 from-transparent transition-all">
-        <span className="inline-block w-8"></span>
-        <Button
-          className="pointer-events-auto size-7"
-          size="icon"
-          variant="destructive"
-          onClick={() => onDeleteBtnClick(thread)}
-        >
-          <X />
-        </Button>
+      <div className="pointer-events-none absolute top-1/2 -right-15 z-10 flex -translate-y-1/2 transition-all">
+        <span
+          id="thread-gradient"
+          className="via-sidebar-accent/90 to-sidebar-accent inline-block w-8 from-transparent"
+        ></span>
+        <div className="bg-sidebar-accent flex gap-1">
+          <Button
+            className="pointer-events-auto size-7"
+            size="icon"
+            variant="outline"
+            onClick={() => onShareBtnClick(thread)}
+          >
+            <Share />
+          </Button>
+          <Button
+            className="pointer-events-auto size-7"
+            size="icon"
+            variant="destructive"
+            onClick={() => onDeleteBtnClick(thread)}
+          >
+            <X />
+          </Button>
+        </div>
       </div>
     </div>
   );

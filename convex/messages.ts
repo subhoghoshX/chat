@@ -69,6 +69,23 @@ export const getMessages = query({
   },
 });
 
+export const getSharedThreadMessages = query({
+  args: { _id: v.id("threads") },
+  async handler(ctx, { _id }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authorized.");
+
+    const thread = await ctx.db.get(_id);
+    if (!thread) throw new Error("Thread not found");
+
+    return await ctx.db
+      .query("messages")
+      .withIndex("by_threadId", (q) => q.eq("threadId", thread.id))
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .collect();
+  },
+});
+
 export const updateMessage = internalMutation({
   args: { _id: v.id("messages"), content: v.string() },
   async handler(ctx, args) {
