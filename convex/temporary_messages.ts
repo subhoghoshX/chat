@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { supportedModels } from "../utils/supported-models";
 import { api, internal } from "./_generated/api";
-import { ModelMessage, streamText } from "ai";
+import { type ModelMessage, streamText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
 import { temporaryMessageFields } from "./schema";
 

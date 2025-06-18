@@ -1,11 +1,10 @@
 import type { Id } from "convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
-import { Authenticated, AuthLoading, Unauthenticated, useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useEffect } from "react";
+import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useNavigate, useParams } from "react-router";
 import { Button } from "./ui/button";
 import { SidebarTrigger } from "./ui/sidebar";
-import { MessageAuthenticated, MessageUnauthenticated } from "./ChatBubble";
+import { MessageAuthenticated } from "./ChatBubble";
 import { SignInButton } from "@clerk/clerk-react";
 import { LoaderCircle } from "lucide-react";
 

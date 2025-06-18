@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { type FilePart, type ImagePart, ModelMessage, streamText } from "ai";
+import { type FilePart, type ImagePart, type ModelMessage, streamText } from "ai";
 import { api, internal } from "./_generated/api";
 import { messageFields } from "./schema";
 
