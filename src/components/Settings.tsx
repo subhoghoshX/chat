@@ -31,7 +31,7 @@ export default function Settings() {
         </main>
       </Unauthenticated>
       <Authenticated>
-        <main className="flex w-full justify-center gap-10 pt-20">
+        <main className="flex w-full justify-center gap-10 px-8 pt-20">
           <section className="flex flex-col">
             <Avatar className="size-32 rounded-[20px]">
               <AvatarImage src={user?.imageUrl} />
@@ -45,8 +45,28 @@ export default function Settings() {
                 Free Tier
               </Badge>
             </div>
+            <Alert className="mt-4">
+              <AlertTitle>Keyboard Shortcuts</AlertTitle>
+              <AlertDescription className="mt-6 flex flex-col gap-3">
+                <p className="flex w-full justify-between">
+                  New Chat
+                  <kbd className="ml-10 space-x-1">
+                    <Badge variant="secondary">Ctrl</Badge>
+                    <Badge variant="secondary">Shift</Badge>
+                    <Badge variant="secondary">O</Badge>
+                  </kbd>
+                </p>
+                <p className="flex w-full justify-between">
+                  Toggle Sidebar
+                  <kbd className="space-x-1">
+                    <Badge variant="secondary">Ctrl</Badge>
+                    <Badge variant="secondary">B</Badge>
+                  </kbd>
+                </p>
+              </AlertDescription>
+            </Alert>
           </section>
-          <Tabs defaultValue="appearance">
+          <Tabs defaultValue="appearance" className="w-full max-w-140">
             <TabsList className="*:px-5">
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
               <TabsTrigger value="api-keys">API Keys</TabsTrigger>
@@ -99,6 +119,10 @@ export default function Settings() {
               <Attachments />
             </TabsContent>
             <TabsContent value="help" className="space-y-2">
+              <p className="my-4 text-sm dark:text-neutral-200">
+                We listen. This app is completely open-source and any feedback we received from amazing users like you
+                is worth gold to us.
+              </p>
               <Alert>
                 <Lightbulb />
                 <AlertTitle>Have a feature request?</AlertTitle>
@@ -111,9 +135,11 @@ export default function Settings() {
               <Alert>
                 <Bug />
                 <AlertTitle>Found a bug?</AlertTitle>
-                <AlertDescription className="flex">
-                  Please <InlineLink href="https://github.com/subhoghoshX/chat/issues">file a report.</InlineLink> For
-                  other issues DM <InlineLink href="https://x.com/subhoghosh_">subho</InlineLink> on X.
+                <AlertDescription>
+                  <span>
+                    Please <InlineLink href="https://github.com/subhoghoshX/chat/issues">file a report</InlineLink>. For
+                    any other issues DM <InlineLink href="https://x.com/subhoghosh_">subho</InlineLink> on X.
+                  </span>
                 </AlertDescription>
               </Alert>
             </TabsContent>
@@ -130,6 +156,7 @@ function Attachments() {
   return (
     <ul className="space-y-2">
       {userAttachments?.map((attachment) => <Attachment {...attachment} key={attachment.storageId} />)}
+      {userAttachments?.length === 0 && "No attachments found."}
     </ul>
   );
 }
