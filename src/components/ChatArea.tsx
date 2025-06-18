@@ -5,6 +5,7 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { MessageAuthenticated, MessageUnauthenticated } from "./ChatBubble";
 import ChatInput from "./ChatInput";
+import { useEffect, useRef } from "react";
 
 export default function ChatArea() {
   const { threadId } = useParams();
@@ -19,11 +20,19 @@ export default function ChatArea() {
     !auth.isAuthenticated && threadId ? { userId: getUserId(), threadId } : "skip",
   );
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [messages, temporaryMessages]);
+
   return (
     <main className="relative h-screen grow overflow-hidden">
       <SidebarTrigger className="absolute top-2 left-2" />
       {path === "" && <WelcomeQuestions />}
-      <div className="h-full overflow-auto pt-4 pb-48">
+      <div ref={scrollContainerRef} className="h-full overflow-auto pt-4 pb-48">
         <article className="mx-auto max-w-3xl space-y-5">
           {auth.isAuthenticated
             ? messages?.map((message) => <MessageAuthenticated key={message._id} message={message} />)
@@ -36,7 +45,7 @@ export default function ChatArea() {
 }
 
 const exampleQuestions = [
-  "What’s a fun fact that sounds unbelievable but is true?",
+  "What's a fun fact that sounds unbelievable but is true?",
   "Can you tell me a joke that always makes people laugh?",
   "Can you help me come up with a creative story idea?",
   "How do I increase my pay at work?",
