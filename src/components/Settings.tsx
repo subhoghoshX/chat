@@ -2,7 +2,7 @@ import { SignInButton, useUser } from "@clerk/clerk-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { Bug, FileIcon, FileText, ImageIcon, Lightbulb, LoaderCircle } from "lucide-react";
+import { Bug, FileText, ImageIcon, Lightbulb, LoaderCircle } from "lucide-react";
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
 import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
@@ -35,7 +35,7 @@ export default function Settings() {
           <section className="flex flex-col">
             <Avatar className="size-32 rounded-[20px]">
               <AvatarImage src={user?.imageUrl} />
-              <AvatarFallback>Hey</AvatarFallback>
+              <AvatarFallback className="size-32 rounded-[20px]">{user?.firstName}</AvatarFallback>
             </Avatar>
             <div>
               <h2 className="mt-3 text-xl font-medium">{user?.fullName}</h2>
