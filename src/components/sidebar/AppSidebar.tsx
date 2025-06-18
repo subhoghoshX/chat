@@ -48,7 +48,7 @@ export default function AppSidebar() {
         </SidebarContent>
         <Unauthenticated>
           <SidebarFooter>
-            <Alert>
+            <Alert className="h-22 w-71">
               <AlertTitle>Heads up!</AlertTitle>
               <AlertDescription className="block">
                 For backing up your chat and access to more models,{" "}
