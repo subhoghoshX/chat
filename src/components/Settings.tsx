@@ -11,9 +11,19 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import InlineLink from "./InlineLink";
+import { Switch } from "./ui/switch";
+import { useState, useEffect } from "react";
+import { Label } from "./ui/label";
 
 export default function Settings() {
   const { user } = useUser();
+  const [hideEmail, setHideEmail] = useState(() => {
+    return localStorage.getItem("hideEmail") === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("hideEmail", hideEmail.toString());
+  }, [hideEmail]);
 
   return (
     <>
@@ -39,7 +49,9 @@ export default function Settings() {
             </Avatar>
             <div>
               <h2 className="mt-3 text-xl font-medium">{user?.fullName}</h2>
-              <p className="text-sm text-neutral-500">{user?.emailAddresses?.[0].emailAddress}</p>
+              <p className={`text-sm text-neutral-500 ${hideEmail ? "blur-sm" : ""}`}>
+                {user?.emailAddresses?.[0].emailAddress}
+              </p>
               <Progress value={3} className="mt-3" />
               <Badge className="mt-3" variant="secondary">
                 Free Tier
@@ -112,6 +124,10 @@ export default function Settings() {
                   onClick={() => applyColorScheme("violet")}
                   className="bg-violet-500 hover:bg-violet-500"
                 />
+              </div>
+              <div className="mt-4 flex items-center gap-2">
+                <Switch checked={hideEmail} onCheckedChange={setHideEmail} id="hide-email" />
+                <Label htmlFor="hide-email">Hide email</Label>
               </div>
             </TabsContent>
             <TabsContent value="api-keys">Coming soon.</TabsContent>
