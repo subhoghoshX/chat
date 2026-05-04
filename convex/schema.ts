@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export const messageFields = {
   threadId: v.string(),
@@ -17,6 +18,8 @@ export const temporaryMessageFields = {
 };
 
 export default defineSchema({
+  ...authTables,
+
   threads: defineTable({
     id: v.string(),
     title: v.string(),

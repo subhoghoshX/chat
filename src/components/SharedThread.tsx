@@ -5,8 +5,8 @@ import { useNavigate, useParams } from "react-router";
 import { Button } from "./ui/button";
 import { SidebarTrigger } from "./ui/sidebar";
 import { MessageAuthenticated } from "./ChatBubble";
-import { SignInButton } from "@clerk/clerk-react";
 import { LoaderCircle } from "lucide-react";
+import AuthDialog from "./AuthDialog";
 
 export default function SharedThread() {
   return (
@@ -23,9 +23,9 @@ export default function SharedThread() {
       <Unauthenticated>
         <main className="flex grow flex-col items-center justify-center gap-2">
           You must be logged in to use this feature.
-          <SignInButton>
+          <AuthDialog>
             <Button>Log In</Button>
-          </SignInButton>
+          </AuthDialog>
         </main>
         <main className=""></main>
       </Unauthenticated>

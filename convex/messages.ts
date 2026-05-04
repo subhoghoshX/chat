@@ -4,6 +4,7 @@ import { gateway } from "@vercel/ai-sdk-gateway";
 import { type FilePart, type ImagePart, type ModelMessage, streamText } from "ai";
 import { api, internal } from "./_generated/api";
 import { messageFields } from "./schema";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const createMessage = mutation({
   args: {
@@ -14,14 +15,14 @@ export const createMessage = mutation({
     files: v.array(v.object({ storageId: v.id("_storage"), type: v.string(), name: v.string() })),
   },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     await ctx.db.insert("messages", {
       threadId: args.threadId,
       content: args.content,
       by: args.by,
-      userId: identity.subject,
+      userId,
       files: args.files,
     });
 
@@ -35,7 +36,7 @@ export const createMessage = mutation({
         threadId: args.threadId,
         content: "",
         by: args.model,
-        userId: identity.subject,
+        userId,
         files: [],
       });
 
@@ -63,13 +64,13 @@ export const createMessage = mutation({
 export const getMessages = query({
   args: { threadId: v.string() },
   async handler(ctx, { threadId }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     return await ctx.db
       .query("messages")
       .withIndex("by_threadId", (q) => q.eq("threadId", threadId))
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .collect();
   },
 });
@@ -77,16 +78,17 @@ export const getMessages = query({
 export const getSharedThreadMessages = query({
   args: { _id: v.id("threads") },
   async handler(ctx, { _id }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     const thread = await ctx.db.get(_id);
     if (!thread) throw new Error("Thread not found");
+    if (!thread.isPublic && thread.userId !== userId) throw new Error("Thread is not shared");
 
     return await ctx.db
       .query("messages")
       .withIndex("by_threadId", (q) => q.eq("threadId", thread.id))
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .filter((q) => q.eq(q.field("userId"), thread.userId))
       .collect();
   },
 });
@@ -168,12 +170,12 @@ export const getFileUrl = query({
 export const getUserAttachments = query({
   args: {},
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
     const files = messages.map((message) => message.files).flat();
 
@@ -184,8 +186,8 @@ export const getUserAttachments = query({
 export const branchOff = mutation({
   args: { threadId: v.string(), messageId: v.id("messages") },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     const messages = await ctx.runQuery(api.messages.getMessages, { threadId: args.threadId });
     const messagesToCopy: typeof messages = [];
@@ -202,7 +204,7 @@ export const branchOff = mutation({
 
     for (const messageToCopy of messagesToCopy) {
       await ctx.db.insert("messages", {
-        userId: identity.subject,
+        userId,
         threadId: newThreadId,
         by: messageToCopy.by,
         content: messageToCopy.content,
@@ -219,7 +221,7 @@ export const branchOff = mutation({
     ctx.db.insert("threads", {
       id: newThreadId,
       title: `🌿 ${thread.title}`,
-      userId: identity.subject,
+      userId,
       isPublic: false,
     });
 

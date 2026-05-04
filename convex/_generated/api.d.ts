@@ -13,11 +13,14 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth from "../auth.js";
+import type * as http from "../http.js";
 import type * as messages from "../messages.js";
 import type * as promote from "../promote.js";
 import type * as temporary_messages from "../temporary_messages.js";
 import type * as temporary_threads from "../temporary_threads.js";
 import type * as threads from "../threads.js";
+import type * as users from "../users.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -28,11 +31,14 @@ import type * as threads from "../threads.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  http: typeof http;
   messages: typeof messages;
   promote: typeof promote;
   temporary_messages: typeof temporary_messages;
   temporary_threads: typeof temporary_threads;
   threads: typeof threads;
+  users: typeof users;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

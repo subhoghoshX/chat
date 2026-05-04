@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Unauthenticated, useConvexAuth } from "convex/react";
 import { Link } from "react-router";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { SignInButton } from "@clerk/clerk-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import FirstSidebar from "./FirstSidebar";
 import ThreadsAuthenticated from "./ThreadsAuthenticated";
 import ThreadsUnauthenticated from "./ThreadsUnauthenticated";
 import { useState } from "react";
+import AuthDialog from "../AuthDialog";
 
 export default function AppSidebar() {
   const auth = useConvexAuth();
@@ -52,9 +52,9 @@ export default function AppSidebar() {
               <AlertTitle>Heads up!</AlertTitle>
               <AlertDescription className="block">
                 For backing up your chat and access to more models,{" "}
-                <SignInButton>
+                <AuthDialog>
                   <a className="cursor-pointer font-semibold text-blue-500 underline">please log in</a>
-                </SignInButton>
+                </AuthDialog>
                 .
               </AlertDescription>
             </Alert>

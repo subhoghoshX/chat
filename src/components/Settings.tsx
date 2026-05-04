@@ -1,6 +1,5 @@
-import { SignInButton, useUser } from "@clerk/clerk-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Bug, FileText, ImageIcon, Lightbulb, LoaderCircle } from "lucide-react";
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
@@ -14,12 +13,18 @@ import InlineLink from "./InlineLink";
 import { Switch } from "./ui/switch";
 import { useState, useEffect } from "react";
 import { Label } from "./ui/label";
+import AuthDialog from "./AuthDialog";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 export default function Settings() {
-  const { user } = useUser();
   const [hideEmail, setHideEmail] = useState(() => {
     return localStorage.getItem("hideEmail") === "true";
   });
+  const { signOut } = useAuthActions();
+  const user = useQuery(api.users.current);
+  const email = user?.email ?? "";
+  const emailPrefix = email.split("@")[0] ?? "User";
+  const avatarFallback = email.slice(0, 2).toUpperCase() || "U";
 
   useEffect(() => {
     localStorage.setItem("hideEmail", hideEmail.toString());
@@ -35,27 +40,27 @@ export default function Settings() {
       <Unauthenticated>
         <main className="flex w-full flex-col items-center justify-center gap-2">
           <h1>Settings is only for logged in users.</h1>
-          <SignInButton>
+          <AuthDialog>
             <Button className="cursor-pointer">Login now</Button>
-          </SignInButton>
+          </AuthDialog>
         </main>
       </Unauthenticated>
       <Authenticated>
         <main className="flex w-full justify-center gap-10 px-8 pt-20">
           <section className="flex flex-col">
             <Avatar className="size-32 rounded-[20px]">
-              <AvatarImage src={user?.imageUrl} />
-              <AvatarFallback className="size-32 rounded-[20px]">{user?.firstName}</AvatarFallback>
+              <AvatarFallback className="size-32 rounded-[20px] text-3xl">{avatarFallback}</AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="mt-3 text-xl font-medium">{user?.fullName}</h2>
-              <p className={`text-sm text-neutral-500 ${hideEmail ? "blur-sm" : ""}`}>
-                {user?.emailAddresses?.[0].emailAddress}
-              </p>
+              <h2 className="mt-3 text-xl font-medium">{emailPrefix}</h2>
+              <p className={`text-sm text-neutral-500 ${hideEmail ? "blur-sm" : ""}`}>{email}</p>
               <Progress value={3} className="mt-3" />
               <Badge className="mt-3" variant="secondary">
                 Free Tier
               </Badge>
+              <Button className="mt-3" variant="outline" onClick={() => void signOut()}>
+                Log out
+              </Button>
             </div>
             <Alert className="mt-4">
               <AlertTitle>Keyboard Shortcuts</AlertTitle>

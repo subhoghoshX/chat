@@ -1,11 +1,12 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const promote = mutation({
   args: { userId: v.string() },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized");
 
     const threads = await ctx.db
       .query("temporary_threads")
@@ -17,7 +18,7 @@ export const promote = mutation({
         id: thread.id,
         isPublic: thread.isPublic,
         title: thread.title,
-        userId: identity.subject,
+        userId,
       });
       await ctx.db.delete(thread._id);
 
@@ -32,7 +33,7 @@ export const promote = mutation({
           threadId: thread.id,
           content: message.content,
           by: message.by,
-          userId: identity.subject,
+          userId,
           files: [],
         });
         await ctx.db.delete(message._id);

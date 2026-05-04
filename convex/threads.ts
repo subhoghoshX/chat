@@ -2,19 +2,20 @@ import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { streamText } from "ai";
 import { gateway } from "@vercel/ai-sdk-gateway";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const createThread = mutation({
   args: { id: v.string() },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     await ctx.db.insert("threads", {
       id: args.id,
       title: "New Thread",
       isPublic: false,
-      userId: identity.subject,
+      userId,
     });
   },
 });
@@ -22,12 +23,12 @@ export const createThread = mutation({
 export const getThreads = query({
   args: {},
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     return await ctx.db
       .query("threads")
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .order("desc")
       .collect();
   },
@@ -36,13 +37,13 @@ export const getThreads = query({
 export const updateThread = mutation({
   args: { _id: v.id("threads"), title: v.string() },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     const thread = await ctx.db.get(args._id);
     if (!thread) throw new Error("Thread not found.");
 
-    if (thread.userId !== identity.subject) throw new Error("Not authorized to update thread.");
+    if (thread.userId !== userId) throw new Error("Not authorized to update thread.");
 
     await ctx.db.patch(args._id, { title: args.title });
   },
@@ -51,13 +52,13 @@ export const updateThread = mutation({
 export const deleteThread = mutation({
   args: { _id: v.id("threads"), threadId: v.string() },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     const thread = await ctx.db.get(args._id);
     if (!thread) throw new Error("Thread not found.");
 
-    if (thread.userId !== identity.subject) throw new Error("Not authorized to delete thread.");
+    if (thread.userId !== userId) throw new Error("Not authorized to delete thread.");
 
     ctx.db.delete(args._id);
 
@@ -65,7 +66,7 @@ export const deleteThread = mutation({
     const messages = await ctx.db
       .query("messages")
       .withIndex("by_threadId", (q) => q.eq("threadId", args.threadId))
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .collect();
     for (const message of messages) {
       await ctx.db.delete(message._id);
@@ -103,12 +104,13 @@ export const internalUpdateThread = internalMutation({
 export const share = mutation({
   args: { _id: v.id("threads") },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized to share the thread.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized to share the thread.");
 
     const thread = await ctx.db.get(args._id);
 
     if (!thread) throw new Error("Thread not found.");
+    if (thread.userId !== userId) throw new Error("Not authorized to share the thread.");
 
     await ctx.db.patch(thread._id, { isPublic: true });
 
@@ -119,8 +121,8 @@ export const share = mutation({
 export const cloneToCurrentUser = mutation({
   args: { _id: v.id("threads") },
   async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authorized.");
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("Not authorized.");
 
     const thread = await ctx.db.get(args._id);
 
@@ -133,13 +135,17 @@ export const cloneToCurrentUser = mutation({
       id: newThreadId,
       isPublic: false,
       title: thread.title,
-      userId: identity.subject,
+      userId,
     });
 
-    const messages = await ctx.runQuery(api.messages.getMessages, { threadId: thread.id });
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_threadId", (q) => q.eq("threadId", thread.id))
+      .filter((q) => q.eq(q.field("userId"), thread.userId))
+      .collect();
     for (const message of messages) {
       await ctx.db.insert("messages", {
-        userId: identity.subject,
+        userId,
         threadId: newThreadId,
         by: message.by,
         content: message.content,

@@ -11,11 +11,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "../ui/sidebar";
-import { Bird, LogIn, MessageCircle, Settings } from "lucide-react";
+import { Bird, LogIn, LogOut, MessageCircle, Settings } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
-import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Button } from "../ui/button";
+import AuthDialog from "../AuthDialog";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const navMain = [
   {
@@ -34,6 +35,7 @@ const navMain = [
 
 export default function FirstSidebar() {
   const { setOpen } = useSidebar();
+  const { signOut } = useAuthActions();
 
   const { "*": path } = useParams();
 
@@ -87,16 +89,16 @@ export default function FirstSidebar() {
           <span className="bg-sidebar-border inline-block size-8 animate-pulse rounded-lg"></span>
         </AuthLoading>
         <Unauthenticated>
-          <SignInButton>
+          <AuthDialog>
             <Button size="icon" variant="outline" className="size-8 cursor-pointer">
               <LogIn className="size-4" />
             </Button>
-          </SignInButton>
+          </AuthDialog>
         </Unauthenticated>
         <Authenticated>
-          <div className="flex size-8 [&_.cl-avatarBox]:size-8! [&_.cl-avatarBox]:rounded-lg!">
-            <UserButton />
-          </div>
+          <Button size="icon" variant="outline" className="size-8 cursor-pointer" onClick={() => void signOut()}>
+            <LogOut className="size-4" />
+          </Button>
         </Authenticated>
       </SidebarFooter>
     </Sidebar>
