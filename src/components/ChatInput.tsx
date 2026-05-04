@@ -19,7 +19,7 @@ export default function InputForm() {
   const createThread = useCreateThread();
   const createTemporaryThread = useCreateTemporaryThread();
 
-  const [selectedModel, setSelectedModel] = useState<Model>("vertex/gemini-2.0-flash-001");
+  const [selectedModel, setSelectedModel] = useState<Model>("gpt-5-nano");
 
   const navigate = useNavigate();
 

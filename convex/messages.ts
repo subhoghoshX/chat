@@ -1,10 +1,11 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
-import { gateway } from "@vercel/ai-sdk-gateway";
 import { type FilePart, type ImagePart, type ModelMessage, streamText } from "ai";
 import { api, internal } from "./_generated/api";
 import { messageFields } from "./schema";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { getSupportedModel } from "../utils/supported-models";
+import { zenModel } from "./zen";
 
 export const createMessage = mutation({
   args: {
@@ -27,6 +28,8 @@ export const createMessage = mutation({
     });
 
     if (args.by === "human" && args.model) {
+      if (!getSupportedModel(args.model)) throw new Error("Unsupported model.");
+
       const prevMessages = await ctx.db
         .query("messages")
         .withIndex("by_threadId", (q) => q.eq("threadId", args.threadId))
@@ -134,7 +137,7 @@ export const getAiReply = internalAction({
     );
 
     const { textStream } = streamText({
-      model: gateway(args.model),
+      model: zenModel(args.model),
       messages: messagesToFeedAi,
       onError(error: unknown) {
         console.log(error);

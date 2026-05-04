@@ -1,16 +1,23 @@
 export const supportedModels = [
-  { label: "Nova Lite", name: "bedrock/amazon.nova-lite-v1:0", for: "ALL" },
-  { label: "Nova Micro", name: "bedrock/amazon.nova-micro-v1:0", for: "ALL" },
-  { label: "DeepSeek V3", name: "fireworks/deepseek-v3", for: "AUTHENTICATED" },
-  { label: "DeepSeek R1", name: "groq/deepseek-r1-distill-llama-70b", for: "AUTHENTICATED" },
-  { label: "Claude 3 Haiku", name: "anthropic/claude-v3-haiku", for: "AUTHENTICATED" },
-  { label: "Qwen 3", name: "deepinfra/qwen3-14b", for: "ALL" },
-  { label: "Gemini 2.0 Flash", name: "vertex/gemini-2.0-flash-001", for: "ALL" },
-  { label: "Llama 4 Maverick", name: "bedrock/meta.llama4-maverick-17b-instruct-v1", for: "AUTHENTICATED" },
-  { label: "Llama 4 Scout", name: "bedrock/meta.llama4-scout-17b-instruct-v1", for: "AUTHENTICATED" },
-  { label: "GPT 4o Mini", name: "openai/gpt-4o-mini", for: "AUTHENTICATED" },
-  { label: "GPT 4.1 Nano", name: "openai/gpt-4.1-nano", for: "AUTHENTICATED" },
-  { label: "Mistral Saba", name: "groq/mistral-saba-24b", for: "AUTHENTICATED" },
+  { label: "GPT 5 Nano", name: "gpt-5-nano", for: "ALL", protocol: "openai" },
+  { label: "Nemotron 3 Super Free", name: "nemotron-3-super-free", for: "ALL", protocol: "openai-compatible" },
+  { label: "Hy3 Preview Free", name: "hy3-preview-free", for: "ALL", protocol: "openai-compatible" },
+  { label: "GPT 5.4 Mini", name: "gpt-5.4-mini", for: "AUTHENTICATED", protocol: "openai" },
+  { label: "GPT 5", name: "gpt-5", for: "AUTHENTICATED", protocol: "openai" },
+  { label: "GPT 5.5", name: "gpt-5.5", for: "AUTHENTICATED", protocol: "openai" },
+  { label: "Claude Haiku 4.5", name: "claude-haiku-4-5", for: "AUTHENTICATED", protocol: "anthropic" },
+  { label: "Claude Sonnet 4.6", name: "claude-sonnet-4-6", for: "AUTHENTICATED", protocol: "anthropic" },
+  { label: "Claude Opus 4.7", name: "claude-opus-4-7", for: "AUTHENTICATED", protocol: "anthropic" },
+  { label: "Kimi K2.6", name: "kimi-k2.6", for: "AUTHENTICATED", protocol: "openai-compatible" },
+  { label: "GLM 5.1", name: "glm-5.1", for: "AUTHENTICATED", protocol: "openai-compatible" },
+  { label: "MiniMax M2.7", name: "minimax-m2.7", for: "AUTHENTICATED", protocol: "openai-compatible" },
+  { label: "Gemini 3 Flash", name: "gemini-3-flash", for: "AUTHENTICATED", protocol: "google" },
 ] as const;
 
 export type Model = (typeof supportedModels)[number]["name"];
+
+export type ModelProtocol = (typeof supportedModels)[number]["protocol"];
+
+export function getSupportedModel(model: string) {
+  return supportedModels.find((supportedModel) => supportedModel.name === model);
+}

@@ -3,8 +3,8 @@ import { internalAction, internalMutation, mutation, query } from "./_generated/
 import { supportedModels } from "../utils/supported-models";
 import { api, internal } from "./_generated/api";
 import { type ModelMessage, streamText } from "ai";
-import { gateway } from "@vercel/ai-sdk-gateway";
 import { temporaryMessageFields } from "./schema";
+import { zenModel } from "./zen";
 
 export const create = mutation({
   args: {
@@ -100,7 +100,7 @@ export const getAiReply = internalAction({
       content: [{ type: "text", text: message.content }],
     }));
     const { textStream } = streamText({
-      model: gateway(args.model),
+      model: zenModel(args.model),
       messages: messagesToFeedAi,
       onError(error: unknown) {
         console.log(error);

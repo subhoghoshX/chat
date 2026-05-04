@@ -21,6 +21,7 @@ import type * as temporary_messages from "../temporary_messages.js";
 import type * as temporary_threads from "../temporary_threads.js";
 import type * as threads from "../threads.js";
 import type * as users from "../users.js";
+import type * as zen from "../zen.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   temporary_threads: typeof temporary_threads;
   threads: typeof threads;
   users: typeof users;
+  zen: typeof zen;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { streamText } from "ai";
-import { gateway } from "@vercel/ai-sdk-gateway";
 import { internal } from "./_generated/api";
+import { zenModel } from "./zen";
 
 export const create = mutation({
   args: { id: v.string(), userId: v.string() },
@@ -73,7 +73,7 @@ export const generateTitle = internalAction({
   args: { _threadId: v.id("temporary_threads"), firstMessage: v.string() },
   async handler(ctx, args) {
     const { textStream } = streamText({
-      model: gateway("vertex/gemini-2.0-flash-001"),
+      model: zenModel("gpt-5-nano"),
       system:
         "You are a helpful assistant that creates concise and informative titles for chat threads based on the user's first message.  Your titles should accurately reflect the topic or intent of the message." +
         "Respond only with the thread title.  The title should be no more than 10 words.",
