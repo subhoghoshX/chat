@@ -40,9 +40,7 @@ export default function Settings() {
       <Unauthenticated>
         <main className="flex w-full flex-col items-center justify-center gap-2">
           <h1>Settings is only for logged in users.</h1>
-          <AuthDialog>
-            <Button className="cursor-pointer">Login now</Button>
-          </AuthDialog>
+          <AuthDialog trigger={<Button className="cursor-pointer">Login now</Button>} />
         </main>
       </Unauthenticated>
       <Authenticated>

@@ -23,9 +23,7 @@ export default function SharedThread() {
       <Unauthenticated>
         <main className="flex grow flex-col items-center justify-center gap-2">
           You must be logged in to use this feature.
-          <AuthDialog>
-            <Button>Log In</Button>
-          </AuthDialog>
+          <AuthDialog trigger={<Button>Log In</Button>} />
         </main>
         <main className=""></main>
       </Unauthenticated>

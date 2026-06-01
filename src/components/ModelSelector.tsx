@@ -33,18 +33,20 @@ export default function ModelSelector({ className, selectedModel, onChange }: Pr
         }
       }}
     >
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("justify-between", className)}
-          size="sm"
-        >
-          {supportedModels.find((model) => model.name === selectedModel)?.label}
-          <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn("justify-between", className)}
+            size="sm"
+          >
+            {supportedModels.find((model) => model.name === selectedModel)?.label}
+            <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        }
+      />
       <PopoverContent className="w-[200px] p-0">
         <div className="flex h-9 items-center gap-2 border-b px-3">
           <SearchIcon className="size-4 shrink-0 opacity-50" />

@@ -7,7 +7,7 @@ import {
   SidebarHeader,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Unauthenticated, useConvexAuth } from "convex/react";
 import { Link } from "react-router";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -30,11 +30,13 @@ export default function AppSidebar() {
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">
         <SidebarHeader className="gap-3.5 border-b p-4">
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Link to="/">
-                <Button className="w-full">New Chat</Button>
-              </Link>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Link to="/" className={buttonVariants({ className: "w-full" })}>
+                  New Chat
+                </Link>
+              }
+            />
             <TooltipContent>Ctrl/Cmd + Shift + O</TooltipContent>
           </Tooltip>
           <SidebarInput placeholder="Search threads..." value={text} onChange={(e) => setText(e.target.value)} />
@@ -52,9 +54,10 @@ export default function AppSidebar() {
               <AlertTitle>Heads up!</AlertTitle>
               <AlertDescription className="block">
                 For backing up your chat and access to more models,{" "}
-                <AuthDialog>
-                  <a className="cursor-pointer font-semibold text-blue-500 underline">please log in</a>
-                </AuthDialog>
+                <AuthDialog
+                  trigger={<a className="cursor-pointer font-semibold text-blue-500 underline">please log in</a>}
+                  triggerNativeButton={false}
+                />
                 .
               </AlertDescription>
             </Alert>

@@ -127,23 +127,25 @@ function CopyButton({ onClick }: { onClick: () => Promise<void> }) {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-8"
-          onClick={async () => {
-            await onClick();
-            setIsCopied(true);
-            const id = setTimeout(() => {
-              setIsCopied(false);
-              clearTimeout(id);
-            }, 1000);
-          }}
-        >
-          {!isCopied ? <Copy /> : <Check />}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button
+            size="icon"
+            variant="ghost"
+            className="size-8"
+            onClick={async () => {
+              await onClick();
+              setIsCopied(true);
+              const id = setTimeout(() => {
+                setIsCopied(false);
+                clearTimeout(id);
+              }, 1000);
+            }}
+          >
+            {!isCopied ? <Copy /> : <Check />}
+          </Button>
+        }
+      />
       <TooltipContent>Copy message</TooltipContent>
     </Tooltip>
   );
@@ -153,19 +155,21 @@ function BranchButton({ onClick }: { onClick: () => Promise<string> }) {
   const navigate = useNavigate();
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-8"
-          onClick={async () => {
-            const newThreadId = await onClick();
-            navigate(`/chat/${newThreadId}`);
-          }}
-        >
-          <Split className="rotate-180" />
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button
+            size="icon"
+            variant="ghost"
+            className="size-8"
+            onClick={async () => {
+              const newThreadId = await onClick();
+              navigate(`/chat/${newThreadId}`);
+            }}
+          >
+            <Split className="rotate-180" />
+          </Button>
+        }
+      />
       <TooltipContent>Branch off</TooltipContent>
     </Tooltip>
   );

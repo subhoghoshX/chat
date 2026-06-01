@@ -5,27 +5,13 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { XIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { renderProp, rendersNativeButton } from "./render";
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
-function DialogTrigger({
-  asChild = false,
-  children,
-  ...props
-}: Omit<React.ComponentProps<typeof DialogPrimitive.Trigger>, "render"> & { asChild?: boolean }) {
-  return (
-    <DialogPrimitive.Trigger
-      data-slot="dialog-trigger"
-      nativeButton={rendersNativeButton(asChild, children)}
-      render={renderProp(asChild, children)}
-      {...props}
-    >
-      {asChild ? undefined : children}
-    </DialogPrimitive.Trigger>
-  );
+function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
 function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {

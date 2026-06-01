@@ -3,27 +3,13 @@ import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { renderProp, rendersNativeButton } from "./render";
 
 function AlertDialog({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
-function AlertDialogTrigger({
-  asChild = false,
-  children,
-  ...props
-}: Omit<React.ComponentProps<typeof AlertDialogPrimitive.Trigger>, "render"> & { asChild?: boolean }) {
-  return (
-    <AlertDialogPrimitive.Trigger
-      data-slot="alert-dialog-trigger"
-      nativeButton={rendersNativeButton(asChild, children)}
-      render={renderProp(asChild, children)}
-      {...props}
-    >
-      {asChild ? undefined : children}
-    </AlertDialogPrimitive.Trigger>
-  );
+function AlertDialogTrigger({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>) {
+  return <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />;
 }
 
 function AlertDialogPortal({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {

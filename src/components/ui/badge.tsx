@@ -23,7 +23,7 @@ function Badge({
   className,
   variant = "default",
   ...props
-}: React.ComponentProps<"span"> & { variant?: BadgeVariant; asChild?: boolean }) {
+}: React.ComponentProps<"span"> & { variant?: BadgeVariant }) {
   return <span data-slot="badge" className={badgeVariants({ variant, className })} {...props} />;
 }
 

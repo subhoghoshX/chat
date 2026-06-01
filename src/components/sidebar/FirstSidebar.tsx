@@ -46,12 +46,10 @@ export default function FirstSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-              <Link to="/">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Bird className="size-4" />
-                </div>
-              </Link>
+            <SidebarMenuButton size="lg" nativeButton={false} render={<Link to="/" />} className="md:h-8 md:p-0">
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <Bird className="size-4" />
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -89,11 +87,13 @@ export default function FirstSidebar() {
           <span className="bg-sidebar-border inline-block size-8 animate-pulse rounded-lg"></span>
         </AuthLoading>
         <Unauthenticated>
-          <AuthDialog>
-            <Button size="icon" variant="outline" className="size-8 cursor-pointer">
-              <LogIn className="size-4" />
-            </Button>
-          </AuthDialog>
+          <AuthDialog
+            trigger={
+              <Button size="icon" variant="outline" className="size-8 cursor-pointer">
+                <LogIn className="size-4" />
+              </Button>
+            }
+          />
         </Unauthenticated>
         <Authenticated>
           <Button size="icon" variant="outline" className="size-8 cursor-pointer" onClick={() => void signOut()}>

@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactElement } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -7,7 +7,13 @@ import { Label } from "./ui/label";
 
 type AuthFlow = "signIn" | "signUp";
 
-export default function AuthDialog({ children }: { children: ReactNode }) {
+export default function AuthDialog({
+  trigger,
+  triggerNativeButton,
+}: {
+  trigger: ReactElement;
+  triggerNativeButton?: boolean;
+}) {
   const { signIn } = useAuthActions();
   const [open, setOpen] = useState(false);
   const [flow, setFlow] = useState<AuthFlow>("signIn");
@@ -34,7 +40,7 @@ export default function AuthDialog({ children }: { children: ReactNode }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger nativeButton={triggerNativeButton} render={trigger} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{flow === "signIn" ? "Log in" : "Create account"}</DialogTitle>

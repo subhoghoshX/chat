@@ -20,14 +20,14 @@ const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 type SidebarMenuButtonVariant = "default" | "outline";
 type SidebarMenuButtonSize = "default" | "sm" | "lg";
 
-function Slottable({
-  asChild,
+function Renderable({
+  render,
   children,
   className,
   ...props
-}: React.HTMLAttributes<HTMLElement> & { asChild?: boolean }) {
-  if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<{ className?: string }>;
+}: React.HTMLAttributes<HTMLElement> & { render?: React.ReactElement<{ className?: string }> }) {
+  if (render) {
+    const child = render;
 
     return React.cloneElement(child, {
       ...props,
@@ -386,12 +386,12 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
 
 function SidebarGroupLabel({
   className,
-  asChild = false,
+  render,
   ...props
-}: React.ComponentProps<"div"> & { asChild?: boolean }) {
+}: React.ComponentProps<"div"> & { render?: React.ReactElement<{ className?: string }> }) {
   return (
-    <Slottable
-      asChild={asChild}
+    <Renderable
+      render={render}
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
@@ -404,14 +404,9 @@ function SidebarGroupLabel({
   );
 }
 
-function SidebarGroupAction({
-  className,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> & { asChild?: boolean }) {
+function SidebarGroupAction({ className, ...props }: React.ComponentProps<typeof Button>) {
   return (
     <Button
-      asChild={asChild}
       variant="ghost"
       data-slot="sidebar-group-action"
       data-sidebar="group-action"
@@ -479,15 +474,13 @@ function sidebarMenuButtonVariants({
 }
 
 function SidebarMenuButton({
-  asChild = false,
   isActive = false,
   variant = "default",
   size = "default",
   tooltip,
   className,
   ...props
-}: React.ComponentProps<"button"> & {
-  asChild?: boolean;
+}: Omit<React.ComponentProps<typeof Button>, "variant" | "size"> & {
   isActive?: boolean;
   tooltip?: string | React.ComponentProps<typeof TooltipContent>;
   variant?: SidebarMenuButtonVariant;
@@ -497,7 +490,6 @@ function SidebarMenuButton({
 
   const button = (
     <Button
-      asChild={asChild}
       variant="ghost"
       data-slot="sidebar-menu-button"
       data-sidebar="menu-button"
@@ -520,7 +512,7 @@ function SidebarMenuButton({
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipTrigger render={button} />
       <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile} {...tooltip} />
     </Tooltip>
   );
@@ -528,16 +520,13 @@ function SidebarMenuButton({
 
 function SidebarMenuAction({
   className,
-  asChild = false,
   showOnHover = false,
   ...props
-}: React.ComponentProps<"button"> & {
-  asChild?: boolean;
+}: React.ComponentProps<typeof Button> & {
   showOnHover?: boolean;
 }) {
   return (
     <Button
-      asChild={asChild}
       variant="ghost"
       data-slot="sidebar-menu-action"
       data-sidebar="menu-action"
@@ -637,19 +626,19 @@ function SidebarMenuSubItem({ className, ...props }: React.ComponentProps<"li">)
 }
 
 function SidebarMenuSubButton({
-  asChild = false,
+  render,
   size = "md",
   isActive = false,
   className,
   ...props
 }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-  asChild?: boolean;
+  render?: React.ReactElement<{ className?: string }>;
   size?: "sm" | "md";
   isActive?: boolean;
 }) {
   return (
-    <Slottable
-      asChild={asChild}
+    <Renderable
+      render={render}
       data-slot="sidebar-menu-sub-button"
       data-sidebar="menu-sub-button"
       data-size={size}

@@ -2,7 +2,6 @@ import * as React from "react";
 import { Button as BaseButton } from "@base-ui/react/button";
 
 import { cn } from "@/lib/utils";
-import { renderProp } from "./render";
 
 type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 type ButtonSize = "default" | "sm" | "lg" | "icon";
@@ -44,25 +43,16 @@ function Button({
   className,
   variant = "default",
   size = "default",
-  asChild = false,
   children,
-  nativeButton,
   ...props
-}: Omit<React.ComponentProps<typeof BaseButton>, "className" | "render"> & {
+}: Omit<React.ComponentProps<typeof BaseButton>, "className"> & {
   className?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
-  asChild?: boolean;
 }) {
   return (
-    <BaseButton
-      data-slot="button"
-      nativeButton={asChild ? false : nativeButton}
-      className={buttonVariants({ variant, size, className })}
-      render={renderProp(asChild, children)}
-      {...props}
-    >
-      {asChild ? undefined : children}
+    <BaseButton data-slot="button" className={buttonVariants({ variant, size, className })} {...props}>
+      {children}
     </BaseButton>
   );
 }

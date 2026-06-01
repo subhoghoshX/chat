@@ -4,7 +4,6 @@ import * as React from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
 import { cn } from "@/lib/utils";
-import { renderProp } from "./render";
 
 function TooltipProvider({
   delayDuration = 0,
@@ -21,16 +20,8 @@ function Tooltip({ ...props }: React.ComponentProps<typeof TooltipPrimitive.Root
   );
 }
 
-function TooltipTrigger({
-  asChild = false,
-  children,
-  ...props
-}: Omit<React.ComponentProps<typeof TooltipPrimitive.Trigger>, "render"> & { asChild?: boolean }) {
-  return (
-    <TooltipPrimitive.Trigger data-slot="tooltip-trigger" render={renderProp(asChild, children)} {...props}>
-      {asChild ? undefined : children}
-    </TooltipPrimitive.Trigger>
-  );
+function TooltipTrigger({ ...props }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
 function TooltipContent({

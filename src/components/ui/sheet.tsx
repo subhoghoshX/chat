@@ -3,27 +3,13 @@ import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 import { XIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { renderProp, rendersNativeButton } from "./render";
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
-function SheetTrigger({
-  asChild = false,
-  children,
-  ...props
-}: Omit<React.ComponentProps<typeof SheetPrimitive.Trigger>, "render"> & { asChild?: boolean }) {
-  return (
-    <SheetPrimitive.Trigger
-      data-slot="sheet-trigger"
-      nativeButton={rendersNativeButton(asChild, children)}
-      render={renderProp(asChild, children)}
-      {...props}
-    >
-      {asChild ? undefined : children}
-    </SheetPrimitive.Trigger>
-  );
+function SheetTrigger({ ...props }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
+  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
 function SheetClose({ ...props }: React.ComponentProps<typeof SheetPrimitive.Close>) {
