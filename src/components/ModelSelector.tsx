@@ -1,9 +1,9 @@
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
 import { Button } from "./ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
+import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { type Model, supportedModels } from "../../utils/supported-models";
 import { useConvexAuth } from "convex/react";
 
@@ -15,11 +15,24 @@ interface Props {
 
 export default function ModelSelector({ className, selectedModel, onChange }: Props) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
   const auth = useConvexAuth();
+  const filteredModels = useMemo(
+    () => supportedModels.filter((model) => model.label.toLowerCase().includes(query.toLowerCase())),
+    [query],
+  );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          setQuery("");
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -33,31 +46,36 @@ export default function ModelSelector({ className, selectedModel, onChange }: Pr
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder="Search model..." />
-          <CommandList className="max-h-none">
-            <CommandEmpty>No model found.</CommandEmpty>
-            <CommandGroup>
-              {supportedModels.map((model) => (
-                <CommandItem
-                  disabled={!auth.isAuthenticated && model.for === "AUTHENTICATED"}
-                  key={model.name}
-                  value={model.name}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue as Model);
-                    setOpen(false);
-                  }}
-                  className="justify-between"
-                >
-                  {model.label}
-                  <CheckIcon
-                    className={cn("mr-2 h-4 w-4", selectedModel === model.name ? "opacity-100" : "opacity-0")}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <div className="flex h-9 items-center gap-2 border-b px-3">
+          <SearchIcon className="size-4 shrink-0 opacity-50" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search model..."
+            className="h-8 border-0 px-0 shadow-none focus-visible:ring-0"
+          />
+        </div>
+        <div className="p-1">
+          {filteredModels.length === 0 && <div className="py-6 text-center text-sm">No model found.</div>}
+          {filteredModels.map((model) => {
+            const disabled = !auth.isAuthenticated && model.for === "AUTHENTICATED";
+
+            return (
+              <button
+                disabled={disabled}
+                key={model.name}
+                onClick={() => {
+                  onChange(model.name);
+                  setOpen(false);
+                }}
+                className="hover:bg-accent hover:text-accent-foreground flex w-full cursor-default items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-hidden disabled:pointer-events-none disabled:opacity-50"
+              >
+                {model.label}
+                <CheckIcon className={cn("mr-2 h-4 w-4", selectedModel === model.name ? "opacity-100" : "opacity-0")} />
+              </button>
+            );
+          })}
+        </div>
       </PopoverContent>
     </Popover>
   );
