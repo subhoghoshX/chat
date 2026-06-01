@@ -61,6 +61,7 @@ export default function FirstSidebar() {
               {navMain.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
+                    aria-label={item.title}
                     tooltip={{
                       children: item.title,
                       hidden: false,
@@ -73,7 +74,6 @@ export default function FirstSidebar() {
                     className="px-2.5 md:px-2"
                   >
                     <item.icon />
-                    <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
