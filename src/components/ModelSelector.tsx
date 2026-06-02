@@ -47,7 +47,7 @@ export default function ModelSelector({ className, selectedModel, onChange }: Pr
           </Button>
         }
       />
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent align="start" className="w-[200px] p-0">
         <div className="flex h-10 items-center gap-2 border-b px-3">
           <SearchIcon className="text-muted-foreground size-4 shrink-0" />
           <Input
