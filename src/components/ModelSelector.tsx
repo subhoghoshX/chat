@@ -1,11 +1,11 @@
 import { CheckIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { type Model, supportedModels } from "../../utils/supported-models";
 import { useConvexAuth } from "convex/react";
+import { Input } from "@base-ui/react/input";
 
 interface Props {
   selectedModel: Model;
@@ -48,13 +48,13 @@ export default function ModelSelector({ className, selectedModel, onChange }: Pr
         }
       />
       <PopoverContent className="w-[200px] p-0">
-        <div className="flex h-9 items-center gap-2 border-b px-3">
-          <SearchIcon className="size-4 shrink-0 opacity-50" />
+        <div className="flex h-10 items-center gap-2 border-b px-3">
+          <SearchIcon className="text-muted-foreground size-4 shrink-0" />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search model..."
-            className="h-8 border-0 px-0 shadow-none focus-visible:ring-0"
+            className="placeholder:text-muted-foreground h-full min-w-0 flex-1 bg-transparent text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
         <div className="p-1">
